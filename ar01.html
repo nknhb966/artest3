@@ -64,21 +64,21 @@ polygon.animate = (t) => {
   const a = pos.array;
 
   // 頂点の変形処理
-  for (const ctrl of ctrls) {
-    if (!ctrl.selected) continue;
-    for (let i = 0; i <= 3; i++) {
-      const x = a[i * 3 + 0] + mesh.position.x;
-      const y = a[i * 3 + 1] + mesh.position.y;
-      const z = a[i * 3 + 2] + mesh.position.z;
-      const p = new THREE.Vector3(x, y, z);
-      if (p.distanceTo(ctrl.position) < 0.05) {
-        a[i * 3 + 0] = ctrl.position.x - mesh.position.x;
-        a[i * 3 + 1] = ctrl.position.y - mesh.position.y;
-        a[i * 3 + 2] = ctrl.position.z - mesh.position.z;
-        pos.needsUpdate = true;
-      }
-    }
-  }
+  // for (const ctrl of ctrls) {
+  //   if (!ctrl.selected) continue;
+  //   for (let i = 0; i <= 3; i++) {
+  //     const x = a[i * 3 + 0] + mesh.position.x;
+  //     const y = a[i * 3 + 1] + mesh.position.y;
+  //     const z = a[i * 3 + 2] + mesh.position.z;
+  //     const p = new THREE.Vector3(x, y, z);
+  //     if (p.distanceTo(ctrl.position) < 0.05) {
+  //       a[i * 3 + 0] = ctrl.position.x - mesh.position.x;
+  //       a[i * 3 + 1] = ctrl.position.y - mesh.position.y;
+  //       a[i * 3 + 2] = ctrl.position.z - mesh.position.z;
+  //       pos.needsUpdate = true;
+  //     }
+  //   }
+  // }
 
   // 片手での回転処理
   const selectedCtrl = ctrls.find(c => c.selected);
