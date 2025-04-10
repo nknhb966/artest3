@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <link rel="icon" href="data:">
+  <title>AR Model Viewer</title>
+</head>
+<body>
+
+<header>
+  <h1>AR Model Viewer</h1>
+  LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
+  MODEL: <a href="https://github.com/echizencity/opendata/blob/main/kokufuhakkutsu/model02.glb">model02.glb</a><br>
+</header>
+
+<script type="module">
+import { THREE, scene, camera, renderer } from "https://code4fukui.github.io/egxr.js/egxr.js";
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+
+// カメラ位置調整（必要なら）
+camera.position.y = 0;
+
+// GLBモデルのURL（rawファイルとして直接読み込む）
+const modelURL = "https://raw.githubusercontent.com/echizencity/opendata/main/kokufuhakkutsu/model02.glb";
+
+// GLTFローダーで読み込む
+const loader = new GLTFLoader();
+loader.load(modelURL, (gltf) => {
+  const model = gltf.scene;
+  model.position.set(0, 0, -0.5); // AR空間の前方に配置
+  model.scale.set(0.1, 0.1, 0.1); // モデルサイズ調整（必要に応じて変更）
+
+  scene.add(model);
+
+  // レンダリングループ
+  renderer.setAnimationLoop(() => {
+    renderer.render(scene, camera);
+  });
+}, undefined, (error) => {
+  console.error("モデル読み込みエラー:", error);
+});
+</script>
+
+</body>
+</html>
