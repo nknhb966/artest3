@@ -11,7 +11,7 @@
 <header>
   <h1>AR Polygon</h1>
   LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
-  APP: <a href="https://github.com/code4fukui/ar-polygon/">src on GitHub</a><br>
+  APP1: <a href="https://github.com/code4fukui/ar-polygon/">src on GitHub</a><br>
 </header>
 
 <script type="module">
@@ -63,6 +63,25 @@ polygon.animate = (t) => {
   const pos = mesh.geometry.attributes.position;
   const a = pos.array;
 
+  // コントローラーが2つ選択されているとき
+  const selectedCtrls = ctrls.filter(c => c.selected);
+  if (selectedCtrls.length === 2) {
+    const p1 = selectedCtrls[0].position;
+    const p2 = selectedCtrls[1].position;
+    const dist = p1.distanceTo(p2);
+
+    if (initialDistance == null) {
+      initialDistance = dist;
+      initialScale = polygon.scale.x; // x,y,z同じスケール前提
+    } else {
+      const scaleFactor = dist / initialDistance;
+      const newScale = initialScale * scaleFactor;
+      polygon.scale.set(newScale, newScale, newScale);
+    }
+  } else {
+    initialDistance = null; // 片手になったらリセット
+  }
+
   // 片手での回転処理
   const selectedCtrl = ctrls.find(c => c.selected);
   if (selectedCtrl) {
@@ -83,25 +102,6 @@ polygon.animate = (t) => {
     lastCtrlPos = currentPos.clone();
   } else {
     lastCtrlPos = null;
-  }
-
-  // コントローラーが2つ選択されているとき
-  const selectedCtrls = ctrls.filter(c => c.selected);
-  if (selectedCtrls.length === 2) {
-    const p1 = selectedCtrls[0].position;
-    const p2 = selectedCtrls[1].position;
-    const dist = p1.distanceTo(p2);
-
-    if (initialDistance == null) {
-      initialDistance = dist;
-      initialScale = polygon.scale.x; // x,y,z同じスケール前提
-    } else {
-      const scaleFactor = dist / initialDistance;
-      const newScale = initialScale * scaleFactor;
-      polygon.scale.set(newScale, newScale, newScale);
-    }
-  } else {
-    initialDistance = null; // 片手になったらリセット
   }
 };
 
