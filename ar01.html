@@ -92,8 +92,21 @@ polygon.animate = (t) => {
   }
 };
 
+// renderer.setAnimationLoop((t) => {
+//   polygon.animate(t);
+//   renderer.render(scene, camera);
+// });
+
+// 掴んで移動するロジック
 renderer.setAnimationLoop((t) => {
-  polygon.animate(t);
+    for (const ctrl of ctrls) {
+      if (ctrl.selected) {
+        // コントローラーの位置に追従させる
+        model.position.copy(ctrl.position);
+        // 方向もそろえるなら以下を使う（任意）
+        // model.quaternion.copy(ctrl.quaternion);
+      }
+  }
   renderer.render(scene, camera);
 });
 </script>
