@@ -1,5 +1,10 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
-<title>AR Polygon</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <link rel="icon" href="data:">
+  <title>AR Polygon</title>
 </head>
 <body>
 
@@ -14,26 +19,20 @@ import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github
 
 const makeMeshTriangle = () => {
   const geometry = new THREE.BufferGeometry();
-
-  // 頂点座標
   const vertices = new Float32Array([
-       0.0,  0.1, 0.0,
-      -0.1, -0.1, 0.0,
-       0.1, -0.1, 0.0,
+    0.0,  0.1, 0.0,
+   -0.1, -0.1, 0.0,
+    0.1, -0.1, 0.0,
   ]);
   geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
-  // 頂点リンク順
-  const index = new Uint32Array([
-      0, 1, 2,
-  ]);
+  const index = new Uint32Array([0, 1, 2]);
   geometry.setIndex(new THREE.BufferAttribute(index, 1));
 
   const material = new THREE.MeshBasicMaterial({
     color: 0xFF0000,
     side: THREE.DoubleSide,
     wireframe: true,
-    //wireframeLinewidth: 10, // ignore
   });
   const mesh = new THREE.Mesh(geometry, material);
   const material2 = new THREE.MeshBasicMaterial({
@@ -41,6 +40,7 @@ const makeMeshTriangle = () => {
     side: THREE.DoubleSide,
   });
   const mesh2 = new THREE.Mesh(geometry, material2);
+
   const grp = new THREE.Group();
   grp.add(mesh);
   grp.add(mesh2);
@@ -52,29 +52,18 @@ camera.position.y = 0;
 
 const polygon = makeMeshTriangle();
 polygon.position.z = -0.5;
-//polygon.position.y = 1.4;
 scene.add(polygon);
 
-// ワイヤーフレームの作成
-/*
-//const wireframeMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 5 });
-const wireframeMaterial = new THREE.MeshBasicMaterial({
-    color: 0xff0000,
-    wireframe: true,
-    //wireframeLinewidth: 10, // 太さを指定
-});
-const edges = new THREE.EdgesGeometry(polygon.geometry);
-//const wireframe = new THREE.LineSegments(edges, wireframeMaterial);
-const wireframe = new THREE.Mesh(polygon.geometry, wireframeMaterial);
-//polygon.add(wireframe);
-*/
+let lastCtrlPos = null;
+let initialDistance = null;
+let initialScale = 1;
 
 polygon.animate = (t) => {
   const mesh = polygon;
-  // メッシュのジオメトリをリアルタイムで変更
   const pos = mesh.geometry.attributes.position;
   const a = pos.array;
 
+  // 頂点の変形処理
   for (const ctrl of ctrls) {
     if (!ctrl.selected) continue;
     for (let i = 0; i <= 3; i++) {
@@ -82,7 +71,7 @@ polygon.animate = (t) => {
       const y = a[i * 3 + 1] + mesh.position.y;
       const z = a[i * 3 + 2] + mesh.position.z;
       const p = new THREE.Vector3(x, y, z);
-      if (p.distanceTo(ctrl.position) < 0.05) { // within 5cm
+      if (p.distanceTo(ctrl.position) < 0.05) {
         a[i * 3 + 0] = ctrl.position.x - mesh.position.x;
         a[i * 3 + 1] = ctrl.position.y - mesh.position.y;
         a[i * 3 + 2] = ctrl.position.z - mesh.position.z;
@@ -90,23 +79,32 @@ polygon.animate = (t) => {
       }
     }
   }
+
+  // 片手での回転処理
+  const selectedCtrl = ctrls.find(c => c.selected);
+  if (selectedCtrl) {
+    const currentPos = selectedCtrl.position;
+    if (lastCtrlPos) {
+      const dx = currentPos.x - lastCtrlPos.x;
+      const dy = currentPos.y - lastCtrlPos.y;
+
+      // 感度調整
+      const sensitivity = 2.0;
+
+      // 横移動でY軸回転（左右）
+      mesh.rotation.y += dx * sensitivity;
+
+      // 縦移動でX軸回転（上下）
+      mesh.rotation.x += dy * sensitivity;
+    }
+    lastCtrlPos = currentPos.clone();
+  } else {
+    lastCtrlPos = null;
+  }
 };
 
-// renderer.setAnimationLoop((t) => {
-//   polygon.animate(t);
-//   renderer.render(scene, camera);
-// });
-
-// 掴んで移動するロジック
 renderer.setAnimationLoop((t) => {
-    for (const ctrl of ctrls) {
-      if (ctrl.selected) {
-        // コントローラーの位置に追従させる
-        model.position.copy(ctrl.position);
-        // 方向もそろえるなら以下を使う（任意）
-        // model.quaternion.copy(ctrl.quaternion);
-      }
-  }
+  polygon.animate(t);
   renderer.render(scene, camera);
 });
 </script>
