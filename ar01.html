@@ -11,7 +11,7 @@
 <header>
   <h1>AR Polygon</h1>
   LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
-  APP: <a href="https://github.com/code4fukui/ar-polygon/">src on GitHub</a><br>
+  APP1: <a href="https://github.com/code4fukui/ar-polygon/">src on GitHub</a><br>
 </header>
 
 <script type="module">
@@ -53,6 +53,9 @@ camera.position.y = 0;
 const polygon = makeMeshTriangle();
 polygon.position.z = -0.5;
 scene.add(polygon);
+
+// 初期スケールを100％に設定
+polygon.scale.set(1.0, 1.0, 1.0);
 
 let lastCtrlPos = null;
 let initialDistance = null;
