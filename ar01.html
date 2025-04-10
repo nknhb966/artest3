@@ -11,7 +11,7 @@
 <header>
   <h1>AR Polygon</h1>
   LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
-  APP1: <a href="https://github.com/code4fukui/ar-polygon/">src on GitHub</a><br>
+  APP: <a href="https://github.com/code4fukui/ar-polygon/">src on GitHub</a><br>
 </header>
 
 <script type="module">
@@ -92,7 +92,7 @@ polygon.animate = (t) => {
       const sensitivity = 10.0;
 
       // 横移動でY軸回転（左右）
-      mesh.rotation.y = dx * sensitivity;
+      mesh.rotation.y = +dx * sensitivity;
 
       // 縦移動でX軸回転（上下）
       mesh.rotation.x -= dy * sensitivity;
