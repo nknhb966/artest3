@@ -11,7 +11,7 @@
 <header>
   <h1>AR Polygon</h1>
   LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
-  APP1: <a href="https://github.com/code4fukui/ar-polygon/">src on GitHub</a><br>
+  APP: <a href="https://github.com/code4fukui/ar-polygon/">src on GitHub</a><br>
 </header>
 
 <script type="module">
@@ -78,6 +78,7 @@ polygon.animate = (t) => {
       const newScale = initialScale * scaleFactor;
       polygon.scale.set(newScale, newScale, newScale);
     }
+    return;
   } else {
     initialDistance = null; // 片手になったらリセット
   }
