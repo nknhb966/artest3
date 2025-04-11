@@ -122,9 +122,10 @@
           const newScale = initialScale * scaleFactor;
           model.scale.set(newScale, newScale, newScale);
         }
+
+        suppressRotationUntil = performance.now() + 1000;
+        lastCtrlPos = null;
         return;
-      } else {
-        initialDistance = null;
       }
 
       const selectedCtrl = ctrls.find(c => c.selected);
