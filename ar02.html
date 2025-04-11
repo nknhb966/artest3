@@ -14,13 +14,14 @@
   <script type="module">
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
 
+  camera.position.y = 0;
+
   let polygon;
 
   const makeMeshPolygon = (sides = 3) => {
     const geometry = new THREE.BufferGeometry();
     const vertices = [];
 
-    // 頂点座標生成
     for (let i = 0; i < sides; i++) {
       const angle = (i / sides) * Math.PI * 2;
       vertices.push(Math.cos(angle) * 0.1, Math.sin(angle) * 0.1, 0);
@@ -29,14 +30,12 @@
     const vertArray = new Float32Array(vertices);
     geometry.setAttribute("position", new THREE.BufferAttribute(vertArray, 3));
 
-    // 面のインデックス生成（三角形分割）
     const indices = [];
     for (let i = 1; i < sides - 1; i++) {
       indices.push(0, i, i + 1);
     }
     geometry.setIndex(indices);
 
-    // ワイヤーフレーム表示
     const material = new THREE.MeshBasicMaterial({
       color: 0xff0000,
       side: THREE.DoubleSide,
@@ -45,31 +44,76 @@
 
     const mesh = new THREE.Mesh(geometry, material);
     mesh.geometry = geometry;
+
+    // animate関数をここで定義して保持
+    mesh.animate = (t) => {
+      const pos = mesh.geometry.attributes.position;
+      const a = pos.array;
+
+      for (const ctrl of ctrls) {
+        if (!ctrl.selected) continue;
+        for (let i = 0; i < vertices.length / 3; i++) {
+          const x = a[i * 3 + 0] + mesh.position.x;
+          const y = a[i * 3 + 1] + mesh.position.y;
+          const z = a[i * 3 + 2] + mesh.position.z;
+          const p = new THREE.Vector3(x, y, z);
+          if (p.distanceTo(ctrl.position) < 0.05) {
+            a[i * 3 + 0] = ctrl.position.x - mesh.position.x;
+            a[i * 3 + 1] = ctrl.position.y - mesh.position.y;
+            a[i * 3 + 2] = ctrl.position.z - mesh.position.z;
+            pos.needsUpdate = true;
+          }
+        }
+      }
+    };
+
     return mesh;
   };
 
-  // 初期のポリゴン（三角形）
+  const createLabelButton = (text, width = 128, height = 32) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#4444ff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "20px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, width / 2, height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true });
+    const geometry = new THREE.PlaneGeometry(0.2, 0.05);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.userData.label = text;
+    return mesh;
+  };
+
+  // 初期ポリゴン（3角形）
   polygon = makeMeshPolygon(3);
   polygon.position.z = -0.5;
   scene.add(polygon);
 
-  // ドロップダウン風UIの生成
+  // メニュー作成
   const menu = new THREE.Group();
-  const shapeNames = ["Triangle", "Square", "Pentagon", "Hexagon"];
-  const shapeSides = { Triangle: 3, Square: 4, Pentagon: 5, Hexagon: 6 };
+  const shapeMap = {
+    Triangle: 3,
+    Square: 4,
+    Pentagon: 5,
+    Hexagon: 6,
+  };
+
+  const shapeNames = Object.keys(shapeMap);
 
   shapeNames.forEach((name, i) => {
-    const btnGeo = new THREE.PlaneGeometry(0.15, 0.05);
-    const btnMat = new THREE.MeshBasicMaterial({ color: 0x4444ff, side: THREE.DoubleSide });
-    const btn = new THREE.Mesh(btnGeo, btnMat);
-    btn.position.y = -i * 0.06;
-    btn.userData.label = name;
+    const btn = createLabelButton(name);
+    btn.position.y = -i * 0.07;
     menu.add(btn);
-
-    // テキスト代わりにボタン上に色で違いを出す（Canvasテキスト追加も可能）
   });
 
-  menu.position.set(0.2, 0, -0.5);
+  menu.position.set(0.25, 0, -0.5);
   scene.add(menu);
 
   const onMenuClick = (ctrl) => {
@@ -78,19 +122,22 @@
       if (ctrl.position.distanceTo(worldPos) < 0.05) {
         const label = child.userData.label;
         scene.remove(polygon);
-        polygon = makeMeshPolygon(shapeSides[label]);
+        polygon = makeMeshPolygon(shapeMap[label]);
         polygon.position.z = -0.5;
         scene.add(polygon);
       }
     }
   };
 
-  // アニメーションループ（UI判定＆ポリゴン更新）
   renderer.setAnimationLoop((t) => {
     for (const ctrl of ctrls) {
       if (ctrl.selected) {
         onMenuClick(ctrl);
       }
+    }
+
+    if (polygon.animate) {
+      polygon.animate(t);
     }
 
     renderer.render(scene, camera);
