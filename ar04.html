@@ -131,18 +131,29 @@
         initialDistance = null;
       }
 
-      const selectedCtrl = selectedCtrls[0];
-      if (selectedCtrl) {
-        const currentPos = selectedCtrl.position;
-        if (lastCtrlPos) {
+      if (selectedCtrls.length === 1) {
+        const ctrl = selectedCtrls[0];
+        const currentPos = ctrl.position;
+
+        if (!lastCtrlPos) {
+          lastCtrlPos = currentPos.clone();
+        } else {
           const dx = currentPos.x - lastCtrlPos.x;
           const dy = currentPos.y - lastCtrlPos.y;
+          const dz = currentPos.z - lastCtrlPos.z;
 
-          const sensitivity = 8.0;
-          mesh.rotation.y += dx * sensitivity;
-          mesh.rotation.x -= dy * sensitivity;
+          const rotateSensitivity = 8.0;
+          const moveSensitivity = 1.0;
+
+          // 回転処理（左右でY回転、上下でX回転）
+          mesh.rotation.y += dx * rotateSensitivity;
+          mesh.rotation.x -= dy * rotateSensitivity;
+
+          // 前後移動（Z軸方向の位置変更）
+          model.position.z += dz * moveSensitivity;
+
+          lastCtrlPos = currentPos.clone();
         }
-        lastCtrlPos = currentPos.clone();
       } else {
         lastCtrlPos = null;
       }
