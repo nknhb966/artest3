@@ -103,19 +103,17 @@ model.animate = (t) => {
 
     const scalePercent = Math.round(model.scale.x * 100);
 
-  if (Math.abs(scalePercent - prevScalePercent) >= 1) {
-    const newText = scalePercent + "%";
-    scene.remove(txt1);
-    txt1 = createModelText(newText, .1);
-    txt1.position.set(model.position.x, model.position.y + .2, model.position.z);
-    scene.add(txt1);
-    txts[0] = txt1;
-    prevScalePercent = scalePercent;
-  }
+    if (Math.abs(scalePercent - prevScalePercent) >= 1) {
+      const newText = scalePercent + "%";
+      scene.remove(txt1);
+      txt1 = createModelText(newText, .1);
+      txt1.position.set(model.position.x, model.position.y + .2, model.position.z);
+      scene.add(txt1);
+      txts[0] = txt1;
+      prevScalePercent = scalePercent;
+    }
 
     txts.forEach(i => i.lookAt(camera.position));
-
-
   });
 })();
 </script>
