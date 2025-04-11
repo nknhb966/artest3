@@ -1,0 +1,64 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<title>vr-lenspark</title>
+<!DOCTYPE html>
+<body style="margin:0; background-color: #333;">
+<div id="container"></div>
+
+<div id="info" style="position: absolute; top: .5em; left: .5em; background-color: rgba(255, 255, 255, .8); padding: .3em;">
+VR-lenspark at <a href=https://lens-park.com/>LensPark</a> for Quest/VisionPro with <a href="https://threejs.org" style="color: black !important;">three.js</a><br>
+<a href=https://code4fukui.github.io/fisheyes-viewer/slideshow.html?url=https://tf0.code4fukui.org/vr180/2024-05-28-lenspark/lenspark.m3u8>VR180 photos by fisheye-viewer</a><br>
+<a href=https://github.com/code4fukui/vr-lenspark>src on GitHub</a><br>
+</div>
+
+<style>
+body {
+  font-family: sans-serif;
+}
+a {
+  color: black !important;
+}
+</style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://code4fukui.github.io/three.js/build/three.module.js",
+    "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
+
+const { renderer, scene, camera } = initXR();
+
+const offy = isVisionPro() ? .6 : 0;
+
+const txts = [];
+
+{
+  const path = "https://echizencity.github.io/opendata/kokufuhakkutsu/model02.glb";
+  const model = await waitLoadGLTF(path);
+  model.position.z = -.5;
+  model.position.x = 0;
+  model.position.y = offy - 0.2;
+  scene.add(model);
+
+  const txt = createModelText("ワッフル", .3);
+  txt.position.x = model.position.x;
+  txt.position.z = model.position.z;
+  txt.position.y = model.position.y + .2;
+  scene.add(txt);
+  txts.push(txt);
+}
+
+renderer.setAnimationLoop(() => {
+  renderer.render(scene, camera);
+  txts.forEach(i => i.lookAt(camera.position));
+});
+
+</script>
+</body>
+</html>
