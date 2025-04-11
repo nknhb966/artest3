@@ -162,6 +162,7 @@ model.animate = (t) => {
   renderer.setAnimationLoop((t) => {
     model.animate(t);
     renderer.render(scene, camera);
+    txts.forEach(i => i.lookAt(camera.position));
   });
 })();
 </script>
