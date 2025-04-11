@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <link rel="icon" href="data:">
+  <title>AR Model</title>
+</head>
+<body>
+
+<header>
+  <h1>AR model</h1>
+  LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
+  APP: <a href="https://github.com/nknhb966/ar-model/">src on GitHub</a><br>
+
+  <label for="modelSelect">モデルを選択：</label>
+  <select id="modelSelect">
+    <option value="">読み込み中...</option>
+  </select>
+
+</header>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://code4fukui.github.io/three.js/build/three.module.js",
+    "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
+  }
+}
+</script>
+
+<script>
+  function parseCSV(csvData) {
+      const lines = csvData.split('\n');
+      const result = [];
+      const headers = lines[0].split(',');
+      for (let i = 1; i < lines.length; i++) {
+          if (lines[i].trim() === '') {
+              continue;
+          }
+          const obj = {};
+          const currentline = lines[i].split(',');
+          for (let j = 0; j < headers.length; j++) {
+              obj[headers[j].trim()] = currentline[j].trim();
+          }
+          result.push(obj);
+      }
+      return result;
+  }
+</script>
+
+
+<script type="module">
+import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
+import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
+
+const response = await fetch("https://nknhb966.github.io/artest3/models.csv"); // 例: CSVファイル名
+const csvText = await response.text();
+const models = parseCSV(csvText);
+
+const modelSelect = document.getElementById("modelSelect");
+modelSelect.innerHTML = ""; // 初期化
+
+// ドロップダウンにモデルを追加
+models.forEach((item, index) => {
+  const option = document.createElement("option");
+  option.value = index;
+  option.textContent = item.name;
+  modelSelect.appendChild(option);
+});
+
+let currentModel = null;
+const offy = isVisionPro() ? .6 : 0;
+let txts = [];
+
+// モデルを読み込んで表示する関数
+async function loadModelByIndex(index) {
+  if (currentModel) {
+    scene.remove(currentModel);
+    txts.forEach(t => scene.remove(t));
+    txts = [];
+  }
+
+  const item = models[index];
+  const model = await waitLoadGLTF(item.path);
+  model.position.set(0, offy - 0.2, -0.5);
+  scene.add(model);
+
+  const txt1 = createModelText("100%", 0.1);
+  const txt2 = createModelText(item.name, 0.2);
+  txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
+  txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
+  scene.add(txt1);
+  scene.add(txt2);
+  txts.push(txt1, txt2);
+
+  currentModel = model;
+  let lastCtrlPos = null;
+  let initialDistance = null;
+  let initialScale = 1;
+  const mesh = model.getObjectByProperty("type", "Mesh");
+
+  model.animate = (t) => {
+    if (!mesh || !mesh.geometry) return;
+
+    const pos = mesh.geometry.attributes.position;
+    const a = pos.array;
+
+    const selectedCtrls = ctrls.filter(c => c.selected);
+    if (selectedCtrls.length === 2) {
+      const p1 = selectedCtrls[0].position;
+      const p2 = selectedCtrls[1].position;
+      const dist = p1.distanceTo(p2);
+
+      if (initialDistance == null) {
+        initialDistance = dist;
+        initialScale = model.scale.x;
+      } else {
+        const scaleFactor = dist / initialDistance;
+        const newScale = initialScale * scaleFactor;
+        model.scale.set(newScale, newScale, newScale);
+      }
+      return;
+    } else {
+      initialDistance = null;
+    }
+
+    const selectedCtrl = ctrls.find(c => c.selected);
+    if (selectedCtrl) {
+      const currentPos = selectedCtrl.position;
+      if (lastCtrlPos) {
+        const dx = currentPos.x - lastCtrlPos.x;
+        const dy = currentPos.y - lastCtrlPos.y;
+
+        const sensitivity = 8.0;
+        mesh.rotation.y += dx * sensitivity;
+        mesh.rotation.x -= dy * sensitivity;
+      }
+      lastCtrlPos = currentPos.clone();
+    } else {
+      lastCtrlPos = null;
+    }
+  };
+}
+
+// ドロップダウンが変更されたときの処理
+modelSelect.addEventListener("change", async (e) => {
+  const index = e.target.value;
+  if (index !== "") {
+    await loadModelByIndex(index);
+  }
+});
+
+renderer.setAnimationLoop((t) => {
+  if (currentModel) {
+    currentModel.animate(t);
+    const scalePercent = Math.round(currentModel.scale.x * 100);
+    if (txts[0]) {
+      scene.remove(txts[0]);
+      const newTxt = createModelText(`${scalePercent}%`, 0.1);
+      newTxt.position.set(currentModel.position.x, currentModel.position.y + 0.2, currentModel.position.z);
+      scene.add(newTxt);
+      txts[0] = newTxt;
+    }
+    txts.forEach(t => t.lookAt(camera.position));
+  }
+
+  renderer.render(scene, camera);
+});
+
+// 初期モデルをロード（最初の行）
+loadModelByIndex(0);
+
+</script>
+
+</body>
+</html>
