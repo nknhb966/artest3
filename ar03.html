@@ -38,11 +38,14 @@ import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code
   model.position.set(0, offy - 0.2, -0.5);
   scene.add(model);
 
-  // const txt = createModelText("ワッフル", .3);
-  let txt = createModelText("100%", .3);
-  txt.position.set(model.position.x, model.position.y + .2, model.position.z);
-  scene.add(txt);
-  txts.push(txt);
+  let txt1 = createModelText("100%", .3);
+  let txt2 = createModelText("ワッフル", .3);
+  txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
+  txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
+  scene.add(txt1);
+  scene.add(txt2);
+  txts.push(txt1);
+  txts.push(txt2);
 
   let lastCtrlPos = null;
   let initialDistance = null;
@@ -93,21 +96,17 @@ model.animate = (t) => {
   };
 
   renderer.setAnimationLoop((t) => {
+    const scalePercent = Math.round(model.scale.x * 100);
+    const newText = scalePercent + "%";
+    if (txt1.text !== newText) {
+      scene.remove(txt1);
+      txt1 = createModelText(newText, .3);
+      txt1.position.set(model.position.x, model.position.y + .2, model.position.z);
+      scene.add(txt1);
+      txts[0] = txt1;
     model.animate(t);
     renderer.render(scene, camera);
     txts.forEach(i => i.lookAt(camera.position));
-
-// 現在のスケールを％表示に変換（例：2.0 → 200%）
-const scalePercent = Math.round(model.scale.x * 100);
-
-// 文字が変わったら再作成（性能考慮するなら条件付きでもOK）
-const newText = scalePercent + "%";
-if (txt.text !== newText) {
-  scene.remove(txt);
-  txt = createModelText(newText, .3);
-  txt.position.set(model.position.x, model.position.y + .2, model.position.z);
-  scene.add(txt);
-  txts[0] = txt; // 更新
 }
 
 
