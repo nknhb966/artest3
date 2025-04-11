@@ -37,9 +37,10 @@
     geometry.setIndex(indices);
 
     const material = new THREE.MeshBasicMaterial({
-      color: 0xff0000,
+      color: 0xff4444,
+      metalness: 0.3,
+      roughness: 0.7,
       side: THREE.DoubleSide,
-      wireframe: true,
     });
 
     const mesh = new THREE.Mesh(geometry, material);
@@ -84,7 +85,7 @@
     ctx.fillText(text, width / 2, height / 2);
 
     const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true });
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
     const geometry = new THREE.PlaneGeometry(0.2, 0.05);
     const mesh = new THREE.Mesh(geometry, material);
     mesh.userData.label = text;
