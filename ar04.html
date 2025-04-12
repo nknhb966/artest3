@@ -117,7 +117,6 @@
         const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
         const dist = p1.distanceTo(p2);
 
-        // スケーリング
         if (!isScaling) {
           initialDistance = dist;
           initialScale = model.scale.x;
@@ -128,7 +127,6 @@
           const newScale = initialScale * scaleFactor;
           model.scale.set(newScale, newScale, newScale);
 
-          // 中心点の移動差分で位置を動かす
           const dx = center.x - lastCenterPos.x;
           const dy = center.y - lastCenterPos.y;
           const dz = center.z - lastCenterPos.z;
@@ -140,8 +138,6 @@
 
           lastCenterPos.copy(center);
         }
-
-        // スケーリング中は片手回転を無効化
         lastCtrlPos = null;
         return;
       } else {
@@ -150,7 +146,7 @@
         lastCenterPos = null;
       }
 
-      // --- 片手回転 ---
+      // 片手回転
       if (selectedCtrls.length === 1) {
         const ctrl = selectedCtrls[0];
         const currentPos = ctrl.position;
@@ -166,7 +162,7 @@
 
           mesh.rotation.y += dx * rotateSensitivity;
           mesh.rotation.x -= dy * rotateSensitivity;
-          model.position.z += dz * rotateSensitivity;
+          mesh.rotation.z += dz * rotateSensitivity;
 
           lastCtrlPos = currentPos.clone();
         }
