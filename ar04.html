@@ -147,11 +147,12 @@
   camera.position.y = 0;
   const offy = isVisionPro() ? 0.6 : 0;
 
+let isLoadingModel = false;
+
   // モデルをロードして表示
   async function loadModel(path, name) {
-    if (currentModel?.userData?.path === path) {
-      return;
-    }
+if (isLoadingModel) return;
+isLoadingModel = true;
 if (currentModel) {
   // 子オブジェクトのメッシュやマテリアルもクリーンアップ
   currentModel.traverse((child) => {
@@ -162,12 +163,10 @@ if (currentModel) {
     }
   });
   scene.remove(currentModel);
+  txts.forEach(t => scene.remove(t));
+  txts = [];
   currentModel = null;
 }
-
-// テキストの削除
-txts.forEach(t => scene.remove(t));
-txts = [];
 
     const model = await waitLoadGLTF(path);
     model.userData.path = path;
@@ -244,6 +243,7 @@ txts = [];
       lastCenterPos = null;
       lastCtrlPos = null;
     };
+isLoadingModel = false;
   }
 
   // メインループ
@@ -275,11 +275,15 @@ txts = [];
     }
 
     // メニュー（モデル）の選択
-    for (const ctrl of ctrls) {
-      if (ctrl.selected) {
-        onMenuClick(ctrl);
-      }
-    }
+for (const ctrl of ctrls) {
+  // 初めて選択された瞬間だけ実行
+  if (ctrl.selected && !ctrl.userData.justSelected) {
+    ctrl.userData.justSelected = true;
+    onMenuClick(ctrl);
+  } else if (!ctrl.selected) {
+    ctrl.userData.justSelected = false;
+  }
+}
 
     renderer.render(scene, camera);
   });
