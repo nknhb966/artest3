@@ -99,6 +99,10 @@ const onMenuClick = (ctrl) => {
 
 const csvURL = "https://nknhb966.github.io/artest3/models.csv";
 const loadMenuFromCSV = async () => {
+
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+  scene.add(ambientLight);
+
   const res = await fetch(csvURL);
   const text = await res.text();
   const records = parseCSV(text);
@@ -117,15 +121,13 @@ const loadMenuFromCSV = async () => {
   });
 
   if (records[0]) {
-    console.log(records[0]);
-    // await loadModel(records[0].path, records[0].name);
+    await loadModel(records[0].path, records[0].name);
   }
 };
 
 // await initXR();
 
 loadMenuFromCSV();
-
 
   let mesh = null;
   let txts = [];
@@ -149,8 +151,6 @@ loadMenuFromCSV();
 
   // モデルをロードして表示
   async function loadModel(path, name) {
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-    scene.add(ambientLight);
     if (currentModel) {
       scene.remove(currentModel);
       txts.forEach(t => scene.remove(t));
@@ -234,28 +234,28 @@ loadMenuFromCSV();
   }
 
   // モデル選択ドロップダウン処理
-  async function setupModelSelector() {
-    const res = await fetch("https://nknhb966.github.io/artest3/models.csv");
-    const csvText = await res.text();
-    const models = parseCSV(csvText);
+  // async function setupModelSelector() {
+  //   const res = await fetch("https://nknhb966.github.io/artest3/models.csv");
+  //   const csvText = await res.text();
+  //   const models = parseCSV(csvText);
 
-    const selector = document.getElementById("modelSelect");
-    modelSelect.innerHTML = "";
-    models.forEach((model, idx) => {
-      const opt = document.createElement("option");
-      opt.value = idx;
-      opt.textContent = model.name;
-      selector.appendChild(opt);
-    });
+  //   const selector = document.getElementById("modelSelect");
+  //   modelSelect.innerHTML = "";
+  //   models.forEach((model, idx) => {
+  //     const opt = document.createElement("option");
+  //     opt.value = idx;
+  //     opt.textContent = model.name;
+  //     selector.appendChild(opt);
+  //   });
 
-    selector.addEventListener("change", () => {
-      const selected = models[selector.value];
-      loadModel(selected.path, selected.name);
-    });
+  //   selector.addEventListener("change", () => {
+  //     const selected = models[selector.value];
+  //     loadModel(selected.path, selected.name);
+  //   });
 
-    // 最初のモデルを読み込む
-    loadModel(models[0].path, models[0].name);
-  }
+  //   // 最初のモデルを読み込む
+  //   loadModel(models[0].path, models[0].name);
+  // }
 
   // メインループ
   renderer.setAnimationLoop(() => {
@@ -293,7 +293,7 @@ for (const ctrl of ctrls) {
     renderer.render(scene, camera);
   });
 
-  setupModelSelector();
+  // setupModelSelector();
   </script>
 </body>
 </html>
