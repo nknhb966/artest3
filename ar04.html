@@ -152,11 +152,22 @@
     if (currentModel?.userData?.path === path) {
       return;
     }
-    if (currentModel) {
-      scene.remove(currentModel);
-      txts.forEach(t => scene.remove(t));
-      txts = [];
+if (currentModel) {
+  // 子オブジェクトのメッシュやマテリアルもクリーンアップ
+  currentModel.traverse((child) => {
+    if (child.isMesh) {
+      child.geometry.dispose();
+      if (child.material.map) child.material.map.dispose();
+      if (child.material) child.material.dispose();
     }
+  });
+  scene.remove(currentModel);
+  currentModel = null;
+}
+
+// テキストの削除
+txts.forEach(t => scene.remove(t));
+txts = [];
 
     const model = await waitLoadGLTF(path);
     model.userData.path = path;
