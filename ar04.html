@@ -1,43 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="utf-8">
+  <title>AR Model Viewer</title>
   <meta name="viewport" content="width=device-width">
   <link rel="icon" href="data:">
-  <title>AR Model</title>
 </head>
 <body>
+  <header>
+    <h1>AR Model Viewer</h1>
+    <select id="modelSelector"></select>
+  </header>
 
-<header>
-  <h1>AR model</h1>
-  LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
-  APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar04.html">src on GitHub</a><br>
-
-  <label for="modelSelect">モデルを選択：</label>
-  <select id="modelSelect">
-    <option value="">読み込み中...</option>
-  </select>
-
-</header>
-
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://code4fukui.github.io/three.js/build/three.module.js",
-    "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://code4fukui.github.io/three.js/build/three.module.js",
+      "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
+    }
   }
-}
-</script>
+  </script>
 
-<script>
+  <script type="module">
+  import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
+  import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
+
+  // CSVパース関数
   function parseCSV(csvData) {
     const lines = csvData.split('\n');
     const result = [];
     const headers = lines[0].split(',');
     for (let i = 1; i < lines.length; i++) {
-      if (lines[i].trim() === '') {
-        continue;
-      }
+      if (lines[i].trim() === '') continue;
       const obj = {};
       const currentline = lines[i].split(',');
       for (let j = 0; j < headers.length; j++) {
@@ -47,173 +41,158 @@
     }
     return result;
   }
-</script>
 
-
-<script type="module">
-  import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
-  import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
-
-  const response = await fetch("https://nknhb966.github.io/artest3/models.csv");
-  const csvText = await response.text();
-  const models = parseCSV(csvText);
-
-  const modelSelect = document.getElementById("modelSelect");
-  modelSelect.innerHTML = "";
-
-  models.forEach((item, index) => {
-    const option = document.createElement("option");
-    option.value = index;
-    option.textContent = item.name;
-    modelSelect.appendChild(option);
-  });
-
+  // モデル操作関連
   let currentModel = null;
-  const offy = isVisionPro() ? .6 : 0;
+  let mesh = null;
   let txts = [];
 
-  async function loadModelByIndex(index) {
+  // 状態用
+  let isScaling = false;
+  let isRotating = false;
+  let initialDistance = null;
+  let initialScale = 1;
+  let lastCenterPos = null;
+  let lastCtrlPos = null;
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-    scene.add(ambientLight);
+  // イージング
+  const easing = 0.2;
+  let targetPosition = new THREE.Vector3();
+  let targetScale = new THREE.Vector3(1, 1, 1);
+  let targetRotation = new THREE.Euler();
 
+  camera.position.y = 0;
+  const offy = isVisionPro() ? 0.6 : 0;
+
+  // モデルをロードして表示
+  async function loadModel(path, name) {
     if (currentModel) {
       scene.remove(currentModel);
       txts.forEach(t => scene.remove(t));
       txts = [];
     }
 
-    const item = models[index];
-    const model = await waitLoadGLTF(item.path);
+    const model = await waitLoadGLTF(path);
     model.position.set(0, offy - 0.2, -0.5);
+    model.scale.set(1, 1, 1);
     scene.add(model);
+    currentModel = model;
 
-    const txt1 = createModelText("100%", 0.1);
-    const txt2 = createModelText(item.name, 0.2);
+    mesh = model.getObjectByProperty("type", "Mesh");
+
+    let txt1 = createModelText("100%", 0.1);
+    let txt2 = createModelText(name, 0.2);
     txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
     txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
     scene.add(txt1);
     scene.add(txt2);
-    txts.push(txt1, txt2);
+    txts = [txt1, txt2];
 
-    currentModel = model;
-let isScaling = false;
-let isRotating = false;
-let initialDistance = null;
-let initialScale = 1;
-let lastCenterPos = null;
-let lastCtrlPos = null;
+    // ターゲット初期化
+    targetPosition.copy(model.position);
+    targetScale.set(1, 1, 1);
+    targetRotation.set(0, 0, 0);
 
-model.animate = (t) => {
-  const mesh = model.getObjectByProperty("type", "Mesh");
-  if (!mesh || !mesh.geometry) return;
+    model.animate = () => {
+      const selectedCtrls = ctrls.filter(c => c.selected);
 
-  const selectedCtrls = ctrls.filter(c => c.selected);
+      if (selectedCtrls.length === 2) {
+        const p1 = selectedCtrls[0].position;
+        const p2 = selectedCtrls[1].position;
+        const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+        const dist = p1.distanceTo(p2);
 
-  if (selectedCtrls.length === 2) {
-    // ---- 両手操作（スケーリング＋移動） ----
-    const p1 = selectedCtrls[0].position;
-    const p2 = selectedCtrls[1].position;
+        if (!isScaling) {
+          initialDistance = dist;
+          initialScale = model.scale.x;
+          lastCenterPos = center.clone();
+          isScaling = true;
+          isRotating = false;
+        } else {
+          const scaleFactor = dist / initialDistance;
+          const newScale = initialScale * scaleFactor;
+          targetScale.set(newScale, newScale, newScale);
 
-    const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-    const dist = p1.distanceTo(p2);
+          const delta = center.clone().sub(lastCenterPos);
+          targetPosition.add(delta);
+          lastCenterPos.copy(center);
+        }
+        lastCtrlPos = null;
+        return;
+      }
 
-    if (!isScaling) {
-      // 両手操作スタート
-      initialDistance = dist;
-      initialScale = model.scale.x;
-      lastCenterPos = center.clone();
-      isScaling = true;
-      isRotating = false; // ← 片手操作中断
-    } else {
-      // スケーリング
-      const scaleFactor = dist / initialDistance;
-      const newScale = initialScale * scaleFactor;
-      model.scale.set(newScale, newScale, newScale);
+      if (selectedCtrls.length === 1) {
+        const currentPos = selectedCtrls[0].position;
+        if (!isRotating) {
+          lastCtrlPos = currentPos.clone();
+          isRotating = true;
+          isScaling = false;
+          initialDistance = null;
+          lastCenterPos = null;
+        } else {
+          const delta = currentPos.clone().sub(lastCtrlPos);
+          targetRotation.x -= delta.y * 8.0;
+          targetRotation.y += delta.x * 8.0;
+          targetRotation.z += delta.z * 8.0;
+          targetPosition.z += delta.z;
+          lastCtrlPos.copy(currentPos);
+        }
+        return;
+      }
 
-      // モデルの移動
-      const dx = center.x - lastCenterPos.x;
-      const dy = center.y - lastCenterPos.y;
-      const dz = center.z - lastCenterPos.z;
-
-      const moveSensitivity = 1.0;
-      model.position.x += dx * moveSensitivity;
-      model.position.y += dy * moveSensitivity;
-      model.position.z += dz * moveSensitivity;
-
-      lastCenterPos.copy(center);
-    }
-
-    // 両手操作中は片手回転を無効
-    lastCtrlPos = null;
-    return;
-  }
-
-  if (selectedCtrls.length === 1) {
-    // ---- 片手操作（回転＋Z移動） ----
-    const ctrl = selectedCtrls[0];
-    const currentPos = ctrl.position;
-
-    if (!isRotating) {
-      // 片手操作スタート
-      lastCtrlPos = currentPos.clone();
-      isRotating = true;
-      isScaling = false; // ← 両手操作中断
+      // 0本指のとき
+      isScaling = false;
+      isRotating = false;
       initialDistance = null;
       lastCenterPos = null;
-    } else {
-      // 回転＋前後移動
-      const dx = currentPos.x - lastCtrlPos.x;
-      const dy = currentPos.y - lastCtrlPos.y;
-      const dz = currentPos.z - lastCtrlPos.z;
-
-      const rotateSensitivity = 8.0;
-
-      mesh.rotation.y += dx * rotateSensitivity;
-      mesh.rotation.x -= dy * rotateSensitivity;
-      mesh.rotation.z += dz * rotateSensitivity;
-
-      lastCtrlPos.copy(currentPos);
-    }
-    return;
+      lastCtrlPos = null;
+    };
   }
 
-  // ---- 手が離された状態（0本指） → 状態リセット ----
-  isScaling = false;
-  isRotating = false;
-  initialDistance = null;
-  lastCenterPos = null;
-  lastCtrlPos = null;
-};
-}
+  // モデル選択ドロップダウン処理
+  async function setupModelSelector() {
+    const res = await fetch("models.csv");
+    const csvText = await res.text();
+    const models = parseCSV(csvText);
 
-  modelSelect.addEventListener("change", async (e) => {
-    const index = e.target.value;
-    if (index !== "") {
-      await loadModelByIndex(index);
-    }
-  });
+    const selector = document.getElementById("modelSelector");
+    models.forEach((model, idx) => {
+      const opt = document.createElement("option");
+      opt.value = idx;
+      opt.textContent = model.name;
+      selector.appendChild(opt);
+    });
 
-  renderer.setAnimationLoop((t) => {
+    selector.addEventListener("change", () => {
+      const selected = models[selector.value];
+      loadModel(selected.path, selected.name);
+    });
+
+    // 最初のモデルを読み込む
+    loadModel(models[0].path, models[0].name);
+  }
+
+  // メインループ
+  renderer.setAnimationLoop(() => {
     if (currentModel) {
-      currentModel.animate(t);
-      const scalePercent = Math.round(currentModel.scale.x * 100);
-      if (txts[0]) {
-        scene.remove(txts[0]);
-        const newTxt = createModelText(`${scalePercent}%`, 0.1);
-        newTxt.position.set(currentModel.position.x, currentModel.position.y + 0.2, currentModel.position.z);
-        scene.add(newTxt);
-        txts[0] = newTxt;
-      }
-      txts.forEach(t => t.lookAt(camera.position));
-    }
+      currentModel.animate();
 
+      // イージング補間適用
+      currentModel.position.lerp(targetPosition, easing);
+      currentModel.scale.lerp(targetScale, easing);
+      if (mesh) {
+        mesh.rotation.x += (targetRotation.x - mesh.rotation.x) * easing;
+        mesh.rotation.y += (targetRotation.y - mesh.rotation.y) * easing;
+        mesh.rotation.z += (targetRotation.z - mesh.rotation.z) * easing;
+      }
+
+      // テキストの追従
+      txts.forEach(i => i.lookAt(camera.position));
+    }
     renderer.render(scene, camera);
   });
 
-  loadModelByIndex(0);
-
-</script>
-
+  setupModelSelector();
+  </script>
 </body>
 </html>
