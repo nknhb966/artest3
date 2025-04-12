@@ -10,8 +10,8 @@
 
 <header>
   <h1>AR model</h1>
-  LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
-  APP: <a href="https://github.com/nknhb966/ar-model/">src on GitHub</a><br>
+  LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
+  APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar03.html">src on GitHub</a><br>
 </header>
 
 <script type="importmap">
@@ -28,10 +28,18 @@ import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github
 import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
 
 (async () => {
-  const offy = isVisionPro() ? .6 : 0;
-  const txts = [];
-
   camera.position.y = 0;
+  const offy = isVisionPro() ? .6 : 0;
+
+  // 状態用
+  let mesh = null;
+  let txts = [];
+  let isScaling = false;
+  let isRotating = false;
+  let initialDistance = null;
+  let initialScale = 1;
+  let lastCenterPos = null;
+  let lastCtrlPos = null;
 
   const path = "https://echizencity.github.io/opendata/kokufuhakkutsu/model02.glb";
   const model = await waitLoadGLTF(path);
@@ -44,55 +52,62 @@ import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code
   txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
   scene.add(txt1);
   scene.add(txt2);
-  txts.push(txt1);
-  txts.push(txt2);
+  txts = [txt1, txt2];
 
-  let lastCtrlPos = null;
-  let initialDistance = null;
-  let initialScale = 1;
 
-const mesh = model.getObjectByProperty("type", "Mesh");
+  mesh = model.getObjectByProperty("type", "Mesh");
 
-model.animate = (t) => {
-  if (!mesh || !mesh.geometry) return;
-
-    const pos = mesh.geometry.attributes.position;
-    const a = pos.array;
-
+  model.animate = () => {
     const selectedCtrls = ctrls.filter(c => c.selected);
+
     if (selectedCtrls.length === 2) {
       const p1 = selectedCtrls[0].position;
       const p2 = selectedCtrls[1].position;
+      const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
       const dist = p1.distanceTo(p2);
 
-      if (initialDistance == null) {
+      if (!isScaling) {
         initialDistance = dist;
         initialScale = model.scale.x;
+        lastCenterPos = center.clone();
+        isScaling = true;
+        isRotating = false;
       } else {
         const scaleFactor = dist / initialDistance;
         const newScale = initialScale * scaleFactor;
-        model.scale.set(newScale, newScale, newScale);
+        targetScale.set(newScale, newScale, newScale);
+
+        const delta = center.clone().sub(lastCenterPos);
+        targetPosition.add(delta);
+        lastCenterPos.copy(center);
+      }
+      lastCtrlPos = null;
+      return;
+    }
+
+    if (selectedCtrls.length === 1) {
+      const currentPos = selectedCtrls[0].position;
+      if (!isRotating) {
+        lastCtrlPos = currentPos.clone();
+        isRotating = true;
+        isScaling = false;
+        initialDistance = null;
+        lastCenterPos = null;
+      } else {
+        const delta = currentPos.clone().sub(lastCtrlPos);
+        targetRotation.x -= delta.y * 8.0;
+        targetRotation.y += delta.x * 8.0;
+        // targetRotation.z += delta.z * 8.0;
+        lastCtrlPos.copy(currentPos);
       }
       return;
-    } else {
-      initialDistance = null;
     }
 
-    const selectedCtrl = ctrls.find(c => c.selected);
-    if (selectedCtrl) {
-      const currentPos = selectedCtrl.position;
-      if (lastCtrlPos) {
-        const dx = currentPos.x - lastCtrlPos.x;
-        const dy = currentPos.y - lastCtrlPos.y;
-
-        const sensitivity = 8.0;
-        mesh.rotation.y += dx * sensitivity;
-        mesh.rotation.x -= dy * sensitivity;
-      }
-      lastCtrlPos = currentPos.clone();
-    } else {
-      lastCtrlPos = null;
-    }
+    isScaling = false;
+    isRotating = false;
+    initialDistance = null;
+    lastCenterPos = null;
+    lastCtrlPos = null;
   };
 
   let prevScalePercent = 100;
@@ -115,7 +130,8 @@ model.animate = (t) => {
 
     txts.forEach(i => i.lookAt(camera.position));
   });
-})();
+})
+();
 </script>
 
 </body>
