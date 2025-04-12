@@ -132,8 +132,8 @@
 
         // 真ん中寄せ
         btn.position.x = (i - (total - 1) / 2) * spacing;
-        btn.position.y = -0.02;
-        btn.position.z = 0.0025;
+        btn.position.y = -0.0;
+        btn.position.z = -0.35;
         menu.add(btn);
       });
 
@@ -168,9 +168,9 @@
         }
       }
 
-      // if (polygon.animate) {
-      //   polygon.animate(t);
-      // }
+    if (polygon && polygon.animate) {
+      polygon.animate(t);
+    }
 
       renderer.render(scene, camera);
     });
