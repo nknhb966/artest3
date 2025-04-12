@@ -27,110 +27,138 @@
 import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
 import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
 
-(async () => {
-  camera.position.y = 0;
-  const offy = isVisionPro() ? .6 : 0;
+  // モデル操作関連
+  let currentModel = null;
 
-  // 状態用
-  let mesh = null;
-  let txts = [];
-  let isScaling = false;
-  let isRotating = false;
-  let initialDistance = null;
-  let initialScale = 1;
-  let lastCenterPos = null;
-  let lastCtrlPos = null;
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+  scene.add(ambientLight);
 
-  const path = "https://echizencity.github.io/opendata/kokufuhakkutsu/model02.glb";
-  const model = await waitLoadGLTF(path);
-  model.position.set(0, offy - 0.2, -0.5);
-  scene.add(model);
+  (async () => {
+    camera.position.y = 0;
+    const offy = isVisionPro() ? .6 : 0;
 
-  let txt1 = createModelText("100%", .1);
-  let txt2 = createModelText("土師器", .2);
-  txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
-  txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
-  scene.add(txt1);
-  scene.add(txt2);
-  txts = [txt1, txt2];
+    // 状態用
+    let mesh = null;
+    let txts = [];
+    let isScaling = false;
+    let isRotating = false;
+    let initialDistance = null;
+    let initialScale = 1;
+    let lastCenterPos = null;
+    let lastCtrlPos = null;
 
+    // イージング
+    const easing = 0.1;
+    let targetPosition = new THREE.Vector3();
+    let targetScale = new THREE.Vector3(1, 1, 1);
+    let targetRotation = new THREE.Euler();
 
-  mesh = model.getObjectByProperty("type", "Mesh");
+    const path = "https://echizencity.github.io/opendata/kokufuhakkutsu/model02.glb";
+    const model = await waitLoadGLTF(path);
+    model.position.set(0, offy - 0.2, -0.5);
+    scene.add(model);
+    currentModel = model;
 
-  model.animate = () => {
-    const selectedCtrls = ctrls.filter(c => c.selected);
+    mesh = model.getObjectByProperty("type", "Mesh");
 
-    if (selectedCtrls.length === 2) {
-      const p1 = selectedCtrls[0].position;
-      const p2 = selectedCtrls[1].position;
-      const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-      const dist = p1.distanceTo(p2);
+    let txt1 = createModelText("100%", .1);
+    let txt2 = createModelText("土師器", .2);
+    txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
+    txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
+    scene.add(txt1);
+    scene.add(txt2);
+    txts = [txt1, txt2];
 
-      if (!isScaling) {
-        initialDistance = dist;
-        initialScale = model.scale.x;
-        lastCenterPos = center.clone();
-        isScaling = true;
-        isRotating = false;
-      } else {
-        const scaleFactor = dist / initialDistance;
-        const newScale = initialScale * scaleFactor;
-        targetScale.set(newScale, newScale, newScale);
+    // ターゲット初期化
+    targetPosition.copy(model.position);
+    targetScale.set(1, 1, 1);
+    targetRotation.set(0, 0, 0);
 
-        const delta = center.clone().sub(lastCenterPos);
-        targetPosition.add(delta);
-        lastCenterPos.copy(center);
+    model.animate = () => {
+      const selectedCtrls = ctrls.filter(c => c.selected);
+
+      if (selectedCtrls.length === 2) {
+        const p1 = selectedCtrls[0].position;
+        const p2 = selectedCtrls[1].position;
+        const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+        const dist = p1.distanceTo(p2);
+
+        if (!isScaling) {
+          initialDistance = dist;
+          initialScale = model.scale.x;
+          lastCenterPos = center.clone();
+          isScaling = true;
+          isRotating = false;
+        } else {
+          const scaleFactor = dist / initialDistance;
+          const newScale = initialScale * scaleFactor;
+          targetScale.set(newScale, newScale, newScale);
+
+          const delta = center.clone().sub(lastCenterPos);
+          targetPosition.add(delta);
+          lastCenterPos.copy(center);
+        }
+        lastCtrlPos = null;
+        return;
       }
+
+      if (selectedCtrls.length === 1) {
+        const currentPos = selectedCtrls[0].position;
+        if (!isRotating) {
+          lastCtrlPos = currentPos.clone();
+          isRotating = true;
+          isScaling = false;
+          initialDistance = null;
+          lastCenterPos = null;
+        } else {
+          const delta = currentPos.clone().sub(lastCtrlPos);
+          targetRotation.x -= delta.y * 8.0;
+          targetRotation.y += delta.x * 8.0;
+          // targetRotation.z += delta.z * 8.0;
+          lastCtrlPos.copy(currentPos);
+        }
+        return;
+      }
+
+      isScaling = false;
+      isRotating = false;
+      initialDistance = null;
+      lastCenterPos = null;
       lastCtrlPos = null;
-      return;
-    }
+    };
 
-    if (selectedCtrls.length === 1) {
-      const currentPos = selectedCtrls[0].position;
-      if (!isRotating) {
-        lastCtrlPos = currentPos.clone();
-        isRotating = true;
-        isScaling = false;
-        initialDistance = null;
-        lastCenterPos = null;
-      } else {
-        const delta = currentPos.clone().sub(lastCtrlPos);
-        targetRotation.x -= delta.y * 8.0;
-        targetRotation.y += delta.x * 8.0;
-        // targetRotation.z += delta.z * 8.0;
-        lastCtrlPos.copy(currentPos);
+    let prevScalePercent = 100;
+
+    renderer.setAnimationLoop((t) => {
+      if (currentModel) {
+        currentModel.animate();
+
+        // イージング補間適用
+        currentModel.position.lerp(targetPosition, easing);
+        currentModel.scale.lerp(targetScale, easing);
+        if (mesh) {
+          mesh.rotation.x += (targetRotation.x - mesh.rotation.x) * easing;
+          mesh.rotation.y += (targetRotation.y - mesh.rotation.y) * easing;
+          mesh.rotation.z += (targetRotation.z - mesh.rotation.z) * easing;
+        }
+
+        // スケール文字の更新
+        const scalePercent = Math.round(currentModel.scale.x * 100);
+        if (txts[0]) {
+          scene.remove(txts[0]);
+          const newTxt = createModelText(`${scalePercent}%`, 0.1);
+          newTxt.position.set(currentModel.position.x, currentModel.position.y + 0.2, currentModel.position.z);
+          scene.add(newTxt);
+          txts[0] = newTxt;
+        }
+
+        // テキストの追従
+        txts.forEach(i => i.lookAt(camera.position));
       }
-      return;
-    }
 
-    isScaling = false;
-    isRotating = false;
-    initialDistance = null;
-    lastCenterPos = null;
-    lastCtrlPos = null;
-  };
-
-  let prevScalePercent = 100;
-
-  renderer.setAnimationLoop((t) => {
-    model.animate(t);
-    renderer.render(scene, camera);
-
-    const scalePercent = Math.round(model.scale.x * 100);
-
-    if (Math.abs(scalePercent - prevScalePercent) >= 1) {
-      const newText = scalePercent + "%";
-      scene.remove(txt1);
-      txt1 = createModelText(newText, .1);
-      txt1.position.set(model.position.x, model.position.y + .2, model.position.z);
-      scene.add(txt1);
-      txts[0] = txt1;
-      prevScalePercent = scalePercent;
-    }
-
-    txts.forEach(i => i.lookAt(camera.position));
-  });
-})
+      renderer.render(scene, camera);
+    });
+  })
 ();
 </script>
 
