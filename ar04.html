@@ -8,8 +8,9 @@
 </head>
 <body>
   <header>
-    <h1>AR model</h1>
-    LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
+    <h1>AR Model</h1>
+    LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
+    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar04.html">src on GitHub</a><br>
   </header>
 
@@ -83,6 +84,7 @@
     }
   };
 
+  // ロード時の制御
   const csvURL = "https://nknhb966.github.io/artest3/models.csv";
   const loadMenuFromCSV = async () => {
 
@@ -114,10 +116,9 @@
 
   loadMenuFromCSV();
 
+  // 状態用
   let mesh = null;
   let txts = [];
-
-  // 状態用
   let isScaling = false;
   let isRotating = false;
   let initialDistance = null;
@@ -176,6 +177,7 @@
     targetScale.set(1, 1, 1);
     targetRotation.set(0, 0, 0);
 
+    // ハンドトラックによるモデル動作制御
     model.animate = () => {
       const selectedCtrls = ctrls.filter(c => c.selected);
 
@@ -222,7 +224,6 @@
         return;
       }
 
-      // 0本指のとき
       isScaling = false;
       isRotating = false;
       initialDistance = null;
