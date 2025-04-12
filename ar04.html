@@ -140,7 +140,7 @@
           const delta = currentPos.clone().sub(lastCtrlPos);
           targetRotation.x -= delta.y * 8.0;
           targetRotation.y += delta.x * 8.0;
-          targetRotation.z += delta.z * 8.0;
+          // targetRotation.z += delta.z * 8.0;
           lastCtrlPos.copy(currentPos);
         }
         return;
@@ -190,6 +190,16 @@
         mesh.rotation.x += (targetRotation.x - mesh.rotation.x) * easing;
         mesh.rotation.y += (targetRotation.y - mesh.rotation.y) * easing;
         mesh.rotation.z += (targetRotation.z - mesh.rotation.z) * easing;
+      }
+
+      // スケール文字の更新
+      const scalePercent = Math.round(currentModel.scale.x * 100);
+      if (txts[0]) {
+        scene.remove(txts[0]);
+        const newTxt = createModelText(`${scalePercent}%`, 0.1);
+        newTxt.position.set(currentModel.position.x, currentModel.position.y + 0.2, currentModel.position.z);
+        scene.add(newTxt);
+        txts[0] = newTxt;
       }
 
       // テキストの追従
