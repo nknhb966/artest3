@@ -8,8 +8,13 @@
 </head>
 <body>
   <header>
-    <h1>AR Model Viewer</h1>
-    <select id="modelSelector"></select>
+    <h1>AR model</h1>
+    LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
+    APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar04.html">src on GitHub</a><br>
+    <label for="modelSelect">モデルを選択：</label>
+    <select id="modelSelect">
+      <option value="">読み込み中...</option>
+    </select>
   </header>
 
   <script type="importmap">
@@ -66,6 +71,8 @@
 
   // モデルをロードして表示
   async function loadModel(path, name) {
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(ambientLight);
     if (currentModel) {
       scene.remove(currentModel);
       txts.forEach(t => scene.remove(t));
@@ -134,7 +141,6 @@
           targetRotation.x -= delta.y * 8.0;
           targetRotation.y += delta.x * 8.0;
           targetRotation.z += delta.z * 8.0;
-          targetPosition.z += delta.z;
           lastCtrlPos.copy(currentPos);
         }
         return;
@@ -151,11 +157,11 @@
 
   // モデル選択ドロップダウン処理
   async function setupModelSelector() {
-    const res = await fetch("models.csv");
+    const res = await fetch("https://nknhb966.github.io/artest3/models.csv");
     const csvText = await res.text();
     const models = parseCSV(csvText);
 
-    const selector = document.getElementById("modelSelector");
+    const selector = document.getElementById("modelSelect");
     models.forEach((model, idx) => {
       const opt = document.createElement("option");
       opt.value = idx;
