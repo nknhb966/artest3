@@ -77,10 +77,19 @@
   // モデル操作関連
   let currentModel = null;
 
+  // const onMenuClick = (ctrl) => {
+  //   for (const child of menu.children) {
+  //     const worldPos = child.getWorldPosition(new THREE.Vector3());
+  //     if (ctrl.position.distanceTo(worldPos) < 0.05) {
+  //       loadModel(child.userData.path, child.userData.name);
+  //     }
+  //   }
+  // };
   const onMenuClick = (ctrl) => {
     for (const child of menu.children) {
       const worldPos = child.getWorldPosition(new THREE.Vector3());
       if (ctrl.position.distanceTo(worldPos) < 0.05) {
+        if (currentModel?.userData?.path === child.userData.path) return;
         loadModel(child.userData.path, child.userData.name);
       }
     }
