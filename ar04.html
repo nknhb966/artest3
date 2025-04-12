@@ -97,81 +97,95 @@
     txts.push(txt1, txt2);
 
     currentModel = model;
-    let isScaling = false;
-    let initialDistance = null;
-    let initialScale = 1;
-    let lastCenterPos = null;
-    let lastCtrlPos = null;
+let isScaling = false;
+let isRotating = false;
+let initialDistance = null;
+let initialScale = 1;
+let lastCenterPos = null;
+let lastCtrlPos = null;
 
-    model.animate = (t) => {
-      const mesh = model.getObjectByProperty("type", "Mesh");
-      if (!mesh || !mesh.geometry) return;
+model.animate = (t) => {
+  const mesh = model.getObjectByProperty("type", "Mesh");
+  if (!mesh || !mesh.geometry) return;
 
-      const selectedCtrls = ctrls.filter(c => c.selected);
+  const selectedCtrls = ctrls.filter(c => c.selected);
 
-      // 両手操作
-      if (selectedCtrls.length === 2) {
-        const p1 = selectedCtrls[0].position;
-        const p2 = selectedCtrls[1].position;
+  if (selectedCtrls.length === 2) {
+    // ---- 両手操作（スケーリング＋移動） ----
+    const p1 = selectedCtrls[0].position;
+    const p2 = selectedCtrls[1].position;
 
-        const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-        const dist = p1.distanceTo(p2);
+    const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+    const dist = p1.distanceTo(p2);
 
-        if (!isScaling) {
-          initialDistance = dist;
-          initialScale = model.scale.x;
-          lastCenterPos = center.clone();
-          isScaling = true;
-        } else {
-          const scaleFactor = dist / initialDistance;
-          const newScale = initialScale * scaleFactor;
-          model.scale.set(newScale, newScale, newScale);
+    if (!isScaling) {
+      // 両手操作スタート
+      initialDistance = dist;
+      initialScale = model.scale.x;
+      lastCenterPos = center.clone();
+      isScaling = true;
+      isRotating = false; // ← 片手操作中断
+    } else {
+      // スケーリング
+      const scaleFactor = dist / initialDistance;
+      const newScale = initialScale * scaleFactor;
+      model.scale.set(newScale, newScale, newScale);
 
-          const dx = center.x - lastCenterPos.x;
-          const dy = center.y - lastCenterPos.y;
-          const dz = center.z - lastCenterPos.z;
+      // モデルの移動
+      const dx = center.x - lastCenterPos.x;
+      const dy = center.y - lastCenterPos.y;
+      const dz = center.z - lastCenterPos.z;
 
-          const moveSensitivity = 1.0;
-          model.position.x += dx * moveSensitivity;
-          model.position.y += dy * moveSensitivity;
-          model.position.z += dz * moveSensitivity;
+      const moveSensitivity = 1.0;
+      model.position.x += dx * moveSensitivity;
+      model.position.y += dy * moveSensitivity;
+      model.position.z += dz * moveSensitivity;
 
-          lastCenterPos.copy(center);
-        }
-        lastCtrlPos = null;
-        lastCenterPos = null;
-        return;
-      } else {
-        isScaling = false;
-        initialDistance = null;
-        lastCenterPos = null;
-      }
+      lastCenterPos.copy(center);
+    }
 
-      // 片手回転
-      if (selectedCtrls.length === 1) {
-        const ctrl = selectedCtrls[0];
-        const currentPos = ctrl.position;
-
-        if (!lastCtrlPos) {
-          lastCtrlPos = currentPos.clone();
-        } else {
-          const dx = currentPos.x - lastCtrlPos.x;
-          const dy = currentPos.y - lastCtrlPos.y;
-          const dz = currentPos.z - lastCtrlPos.z;
-
-          const rotateSensitivity = 8.0;
-
-          mesh.rotation.y += dx * rotateSensitivity;
-          mesh.rotation.x -= dy * rotateSensitivity;
-          mesh.rotation.z += dz * rotateSensitivity;
-
-          lastCtrlPos = currentPos.clone();
-        }
-      } else {
-        lastCtrlPos = null;
-      }
-    };
+    // 両手操作中は片手回転を無効
+    lastCtrlPos = null;
+    return;
   }
+
+  if (selectedCtrls.length === 1) {
+    // ---- 片手操作（回転＋Z移動） ----
+    const ctrl = selectedCtrls[0];
+    const currentPos = ctrl.position;
+
+    if (!isRotating) {
+      // 片手操作スタート
+      lastCtrlPos = currentPos.clone();
+      isRotating = true;
+      isScaling = false; // ← 両手操作中断
+      initialDistance = null;
+      lastCenterPos = null;
+    } else {
+      // 回転＋前後移動
+      const dx = currentPos.x - lastCtrlPos.x;
+      const dy = currentPos.y - lastCtrlPos.y;
+      const dz = currentPos.z - lastCtrlPos.z;
+
+      const rotateSensitivity = 8.0;
+
+      mesh.rotation.y += dx * rotateSensitivity;
+      mesh.rotation.x -= dy * rotateSensitivity;
+      mesh.rotation.z += dz * rotateSensitivity;
+
+      lastCtrlPos.copy(currentPos);
+    }
+    return;
+  }
+
+  // ---- 手が離された状態（0本指） → 状態リセット ----
+  isScaling = false;
+  isRotating = false;
+  initialDistance = null;
+  lastCenterPos = null;
+  lastCtrlPos = null;
+};
+}
 
   modelSelect.addEventListener("change", async (e) => {
     const index = e.target.value;
