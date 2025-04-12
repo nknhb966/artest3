@@ -49,85 +49,74 @@
     return result;
   }
 
-// ラベルボタン作成関数
-const createLabelButton = (text, width = 512, height = 128) => {
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#4444ff";
-  ctx.fillRect(0, 0, width, height);
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "48px sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, width / 2, height / 2);
+  // ラベルボタン作成関数
+  const createLabelButton = (text, width = 512, height = 128) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#4444ff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "48px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, width / 2, height / 2);
 
-  const texture = new THREE.CanvasTexture(canvas);
-  const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-  const geometry = new THREE.PlaneGeometry(0.16, 0.04);
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.userData.label = text;
-  return mesh;
-};
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+    const geometry = new THREE.PlaneGeometry(0.16, 0.04);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.userData.label = text;
+    return mesh;
+  };
 
-const menu = new THREE.Group();
-scene.add(menu);
+  const menu = new THREE.Group();
+  scene.add(menu);
 
   // モデル操作関連
   let currentModel = null;
 
-
-// const loadModel = async (path) => {
-//   if (currentModel) {
-//     scene.remove(currentModel);
-//   }
-//   const model = await waitLoadGLTF(path);
-//   model.position.set(0, 0, -0.5);
-//   scene.add(model);
-//   currentModel = model;
-// };
-
-const onMenuClick = (ctrl) => {
-  for (const child of menu.children) {
-    const worldPos = child.getWorldPosition(new THREE.Vector3());
-    if (ctrl.position.distanceTo(worldPos) < 0.05) {
-      loadModel(child.userData.path, child.userData.name);
+  const onMenuClick = (ctrl) => {
+    for (const child of menu.children) {
+      const worldPos = child.getWorldPosition(new THREE.Vector3());
+      if (ctrl.position.distanceTo(worldPos) < 0.05) {
+        loadModel(child.userData.path, child.userData.name);
+      }
     }
-  }
-};
+  };
 
-const csvURL = "https://nknhb966.github.io/artest3/models.csv";
-const loadMenuFromCSV = async () => {
+  const csvURL = "https://nknhb966.github.io/artest3/models.csv";
+  const loadMenuFromCSV = async () => {
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-  scene.add(ambientLight);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(ambientLight);
 
-  const res = await fetch(csvURL);
-  const text = await res.text();
-  const records = parseCSV(text);
+    const res = await fetch(csvURL);
+    const text = await res.text();
+    const records = parseCSV(text);
 
-  menu.clear();
-  const spacing = 0.2;
-  const total = records.length;
+    menu.clear();
+    const spacing = 0.2;
+    const total = records.length;
 
-  records.forEach((item, i) => {
-    const btn = createLabelButton(item.name);
-    btn.userData.path = item.path;
-    btn.position.x = (i - (total - 1) / 2) * spacing;
-    btn.position.y = -0.25;
-    btn.position.z = -0.25;
-    menu.add(btn);
-  });
+    records.forEach((item, i) => {
+      const btn = createLabelButton(item.name);
+      btn.userData.path = item.path;
+      btn.position.x = (i - (total - 1) / 2) * spacing;
+      btn.position.y = -0.25;
+      btn.position.z = -0.25;
+      menu.add(btn);
+    });
 
-  if (records[0]) {
-    await loadModel(records[0].path, records[0].name);
-  }
-};
+    console.log(records);
 
-// await initXR();
+    if (records[0]) {
+      await loadModel(records[0].path, records[0].name);
+    }
+  };
 
-loadMenuFromCSV();
+  loadMenuFromCSV();
 
   let mesh = null;
   let txts = [];
@@ -151,6 +140,9 @@ loadMenuFromCSV();
 
   // モデルをロードして表示
   async function loadModel(path, name) {
+    if (currentModel?.userData?.path === path) {
+      return;
+    }
     if (currentModel) {
       scene.remove(currentModel);
       txts.forEach(t => scene.remove(t));
@@ -158,6 +150,7 @@ loadMenuFromCSV();
     }
 
     const model = await waitLoadGLTF(path);
+    model.userData.path = path;
     model.position.set(0, offy - 0.2, -0.5);
     model.scale.set(1, 1, 1);
     scene.add(model);
@@ -233,30 +226,6 @@ loadMenuFromCSV();
     };
   }
 
-  // モデル選択ドロップダウン処理
-  // async function setupModelSelector() {
-  //   const res = await fetch("https://nknhb966.github.io/artest3/models.csv");
-  //   const csvText = await res.text();
-  //   const models = parseCSV(csvText);
-
-  //   const selector = document.getElementById("modelSelect");
-  //   modelSelect.innerHTML = "";
-  //   models.forEach((model, idx) => {
-  //     const opt = document.createElement("option");
-  //     opt.value = idx;
-  //     opt.textContent = model.name;
-  //     selector.appendChild(opt);
-  //   });
-
-  //   selector.addEventListener("change", () => {
-  //     const selected = models[selector.value];
-  //     loadModel(selected.path, selected.name);
-  //   });
-
-  //   // 最初のモデルを読み込む
-  //   loadModel(models[0].path, models[0].name);
-  // }
-
   // メインループ
   renderer.setAnimationLoop(() => {
     if (currentModel) {
@@ -285,15 +254,15 @@ loadMenuFromCSV();
       txts.forEach(i => i.lookAt(camera.position));
     }
 
-for (const ctrl of ctrls) {
-  if (ctrl.selected) {
-    onMenuClick(ctrl);
-  }
-}
+    // メニュー（モデル）の選択
+    for (const ctrl of ctrls) {
+      if (ctrl.selected) {
+        onMenuClick(ctrl);
+      }
+    }
+
     renderer.render(scene, camera);
   });
-
-  // setupModelSelector();
   </script>
 </body>
 </html>
