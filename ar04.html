@@ -11,10 +11,6 @@
     <h1>AR model</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar04.html">src on GitHub</a><br>
-    <label for="modelSelect">モデルを選択：</label>
-    <select id="modelSelect">
-      <option value="">読み込み中...</option>
-    </select>
   </header>
 
   <script type="importmap">
@@ -77,14 +73,6 @@
   // モデル操作関連
   let currentModel = null;
 
-  // const onMenuClick = (ctrl) => {
-  //   for (const child of menu.children) {
-  //     const worldPos = child.getWorldPosition(new THREE.Vector3());
-  //     if (ctrl.position.distanceTo(worldPos) < 0.05) {
-  //       loadModel(child.userData.path, child.userData.name);
-  //     }
-  //   }
-  // };
   const onMenuClick = (ctrl) => {
     for (const child of menu.children) {
       const worldPos = child.getWorldPosition(new THREE.Vector3());
@@ -112,9 +100,10 @@
     records.forEach((item, i) => {
       const btn = createLabelButton(item.name);
       btn.userData.path = item.path;
+      btn.userData.name = item.name;
       btn.position.x = (i - (total - 1) / 2) * spacing;
-      btn.position.y = -0.25;
-      btn.position.z = -0.25;
+      btn.position.y = -0.3;
+      btn.position.z = -0.2;
       menu.add(btn);
     });
 
@@ -147,26 +136,25 @@
   camera.position.y = 0;
   const offy = isVisionPro() ? 0.6 : 0;
 
-let isLoadingModel = false;
+  let isLoadingModel = false;
 
   // モデルをロードして表示
   async function loadModel(path, name) {
-if (isLoadingModel) return;
-isLoadingModel = true;
-if (currentModel) {
-  // 子オブジェクトのメッシュやマテリアルもクリーンアップ
-  currentModel.traverse((child) => {
-    if (child.isMesh) {
-      child.geometry.dispose();
-      if (child.material.map) child.material.map.dispose();
-      if (child.material) child.material.dispose();
+    if (isLoadingModel) return;
+    isLoadingModel = true;
+    if (currentModel) {
+      currentModel.traverse((child) => {
+        if (child.isMesh) {
+          child.geometry.dispose();
+          if (child.material.map) child.material.map.dispose();
+          if (child.material) child.material.dispose();
+        }
+      });
+      scene.remove(currentModel);
+      txts.forEach(t => scene.remove(t));
+      txts = [];
+      currentModel = null;
     }
-  });
-  scene.remove(currentModel);
-  txts.forEach(t => scene.remove(t));
-  txts = [];
-  currentModel = null;
-}
 
     const model = await waitLoadGLTF(path);
     model.userData.path = path;
@@ -243,7 +231,7 @@ if (currentModel) {
       lastCenterPos = null;
       lastCtrlPos = null;
     };
-isLoadingModel = false;
+    isLoadingModel = false;
   }
 
   // メインループ
@@ -275,15 +263,14 @@ isLoadingModel = false;
     }
 
     // メニュー（モデル）の選択
-for (const ctrl of ctrls) {
-  // 初めて選択された瞬間だけ実行
-  if (ctrl.selected && !ctrl.userData.justSelected) {
-    ctrl.userData.justSelected = true;
-    onMenuClick(ctrl);
-  } else if (!ctrl.selected) {
-    ctrl.userData.justSelected = false;
-  }
-}
+    for (const ctrl of ctrls) {
+      if (ctrl.selected && !ctrl.userData.justSelected) {
+        ctrl.userData.justSelected = true;
+        onMenuClick(ctrl);
+      } else if (!ctrl.selected) {
+        ctrl.userData.justSelected = false;
+      }
+    }
 
     renderer.render(scene, camera);
   });
