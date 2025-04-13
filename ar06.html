@@ -105,42 +105,6 @@
       return parseCSV(text);
     }
 
-    async function initialize() {
-      const modelSelect = document.getElementById("modelSelect");
-      const viewer = document.getElementById("viewer");
-
-      const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
-      const records = await loadCSV(csvUrl);
-
-      modelSelect.innerHTML = "";
-      records.forEach((item, index) => {
-        const option = document.createElement("option");
-        option.value = index;
-        option.textContent = item.name;
-        modelSelect.appendChild(option);
-      });
-
-      async function loadModel(path, name) {
-        viewer.src = path;
-        viewer.alt = name;
-      }
-
-      modelSelect.addEventListener("change", async (e) => {
-        const selectedIndex = e.target.value;
-        const item = records[selectedIndex];
-        if (item) {
-          await loadModel(item.path, item.name);
-        }
-      });
-
-      // 初期表示
-      if (records.length > 0) {
-        await loadModel(records[0].path, records[0].name);
-      }
-    }
-
-    initialize();
-
   // ラベルボタン作成関数
   const createLabelButton = (text, width = 512, height = 128) => {
     const canvas = document.createElement("canvas");
@@ -182,12 +146,26 @@
   // ロード時の制御
   const csvURL = "https://nknhb966.github.io/artest3/models.csv";
   const loadMenuFromCSV = async () => {
+
     const ambientLight = new THREE.AmbientLight(0xffffff, 3);
     scene.add(ambientLight);
 
     const res = await fetch(csvURL);
     const text = await res.text();
     const records = parseCSV(text);
+
+    // モデルをロードしてModel-Viewerで表示
+    const viewer = document.getElementById("viewer");
+
+    async function loadMV(path, name) {
+      viewer.src = path;
+      viewer.alt = name;
+    }
+
+    // Model-Viewerで初期表示
+    if (records.length > 0) {
+      await loadMV(records[0].path, records[0].name);
+    }
 
     // ブラウザモードでモデル選択
     const modelSelect = document.getElementById("modelSelect");
@@ -204,6 +182,7 @@
       const selectedIndex = e.target.value;
       const item = records[selectedIndex];
       if (item) {
+        await loadMV(item.path, item.name);
         await loadModel(item.path, item.name);
       }
     });
