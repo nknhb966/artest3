@@ -12,6 +12,10 @@
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
+    <label for="modelSelect">モデルを選択：</label>
+    <select id="modelSelect">
+      <option value="">読み込み中...</option>
+    </select>
   </header>
 
   <script type="importmap">
@@ -87,7 +91,6 @@
   // ロード時の制御
   const csvURL = "https://nknhb966.github.io/artest3/models.csv";
   const loadMenuFromCSV = async () => {
-
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
 
@@ -95,6 +98,26 @@
     const text = await res.text();
     const records = parseCSV(text);
 
+    // ブラウザモードでモデル選択
+    const modelSelect = document.getElementById("modelSelect");
+    modelSelect.innerHTML = "";
+
+    records.forEach((item, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = item.name;
+      modelSelect.appendChild(option);
+    });
+
+    modelSelect.addEventListener("change", async (e) => {
+      const selectedIndex = e.target.value;
+      const item = records[selectedIndex];
+      if (item) {
+        await loadModel(item.path, item.name);
+      }
+    });
+
+    // AR内でモデル選択
     menu.clear();
     const spacing = 0.2;
     const total = records.length;
@@ -132,7 +155,6 @@
   let targetScale = new THREE.Vector3(1, 1, 1);
   let targetRotation = new THREE.Euler();
 
-  camera.position.set(0, 0, 0.5);
   const offy = isVisionPro() ? 0.6 : 0;
 
   let isLoadingModel = false;
