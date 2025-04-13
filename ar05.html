@@ -27,6 +27,12 @@
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
 
+if (renderer.xr.isPresenting) {
+  console.log("ARモード中です");
+} else {
+  console.log("通常のブラウザモードです");
+}
+
   // CSVパース関数
   function parseCSV(csvData) {
     const lines = csvData.split('\n');
@@ -103,9 +109,15 @@
       const btn = createLabelButton(item.name);
       btn.userData.path = item.path;
       btn.userData.name = item.name;
-      btn.position.x = (i - (total - 1) / 2) * spacing;
-      btn.position.y = -0.3;
-      btn.position.z = -0.2;
+      if (renderer.xr.isPresenting) {
+        btn.position.x = (i - (total - 1) / 2) * spacing;
+        btn.position.y = -0.3;
+        btn.position.z = -0.2;
+      } else {
+        btn.position.y = -(i - (total - 1) / 2) * spacing/4;
+        btn.position.x = -0.2;
+        btn.position.z = -0.5;
+      }
       menu.add(btn);
     });
 
@@ -132,7 +144,6 @@
   let targetScale = new THREE.Vector3(1, 1, 1);
   let targetRotation = new THREE.Euler();
 
-  camera.position.set(0, 0, 0.5);
   const offy = isVisionPro() ? 0.6 : 0;
 
   let isLoadingModel = false;
