@@ -8,7 +8,7 @@
 </head>
 <body>
   <header>
-    <h1>AR Model+</h1>
+    <h1>AR Model</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar04.html">src on GitHub</a><br>
@@ -365,7 +365,6 @@
 
   // メインループ
   renderer.setAnimationLoop(() => {
-    renderer.render(scene, camera);
     if (currentModel) {
       currentModel.animate();
 
@@ -401,7 +400,16 @@
         ctrl.userData.justSelected = false;
       }
     }
+
+    renderer.render(scene, camera);
   });
+
+  // 非XR環境で通常描画を始める
+  if (!navigator.xr) {
+    renderer.setAnimationLoop(() => {
+      renderer.render(scene, camera);
+    });
+  }
   </script>
 </body>
 </html>
