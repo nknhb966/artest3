@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>AR Model Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    #viewer-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+    }
+    model-viewer {
+      width: 100%;
+      height: 100%;
+    }
+    #ui-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 10px;
+    }
+    select {
+      font-size: 16px;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="ui-overlay">
+    <h1>AR Model</h1>
+    LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
+    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
+    APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
+    <label for="modelSelect">モデルを選択：</label>
+    <select id="modelSelect"></select>
+  </div>
+
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+  <div id="viewer-container">
+    <model-viewer
+      id="viewer"
+      ar
+      ar-modes="scene-viewer webxr quick-look"
+      camera-controls
+      autoplay
+      src=""
+      alt="AR遺物表示"
+    >
+    </model-viewer>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://code4fukui.github.io/three.js/build/three.module.js",
+      "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+  import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
+  import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
+
+  // CSVパース関数
+  function parseCSV(csvData) {
+    const lines = csvData.split('\n');
+    const result = [];
+    const headers = lines[0].split(',');
+    for (let i = 1; i < lines.length; i++) {
+      if (lines[i].trim() === '') {
+        continue;
+      }
+      const obj = {};
+      const currentline = lines[i].split(',');
+      for (let j = 0; j < headers.length; j++) {
+        obj[headers[j].trim()] = currentline[j].trim();
+      }
+      result.push(obj);
+    }
+    return result;
+  }
+
+    async function loadCSV(url) {
+      const response = await fetch(url);
+      const text = await response.text();
+      return parseCSV(text);
+    }
+
+    async function initialize() {
+      const modelSelect = document.getElementById("modelSelect");
+      const viewer = document.getElementById("viewer");
+
+      const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
+      const records = await loadCSV(csvUrl);
+
+      modelSelect.innerHTML = "";
+      records.forEach((item, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = item.name;
+        modelSelect.appendChild(option);
+      });
+
+      async function loadModel(path, name) {
+        viewer.src = path;
+        viewer.alt = name;
+      }
+
+      modelSelect.addEventListener("change", async (e) => {
+        const selectedIndex = e.target.value;
+        const item = records[selectedIndex];
+        if (item) {
+          await loadModel(item.path, item.name);
+        }
+      });
+
+      // 初期表示
+      if (records.length > 0) {
+        await loadModel(records[0].path, records[0].name);
+      }
+    }
+
+    initialize();
+
+  // ラベルボタン作成関数
+  const createLabelButton = (text, width = 512, height = 128) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#4444ff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "48px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, width / 2, height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+    const geometry = new THREE.PlaneGeometry(0.16, 0.04);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.userData.label = text;
+    return mesh;
+  };
+
+  const menu = new THREE.Group();
+  scene.add(menu);
+
+  // モデル操作関連
+  let currentModel = null;
+
+  const onMenuClick = (ctrl) => {
+    for (const child of menu.children) {
+      const worldPos = child.getWorldPosition(new THREE.Vector3());
+      if (ctrl.position.distanceTo(worldPos) < 0.05) {
+        if (currentModel?.userData?.path === child.userData.path) return;
+        loadModel(child.userData.path, child.userData.name);
+      }
+    }
+  };
+
+  // ロード時の制御
+  const csvURL = "https://nknhb966.github.io/artest3/models.csv";
+  const loadMenuFromCSV = async () => {
+    const ambientLight = new THREE.AmbientLight(0xffffff, 3);
+    scene.add(ambientLight);
+
+    const res = await fetch(csvURL);
+    const text = await res.text();
+    const records = parseCSV(text);
+
+    // ブラウザモードでモデル選択
+    const modelSelect = document.getElementById("modelSelect");
+    modelSelect.innerHTML = "";
+
+    records.forEach((item, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = item.name;
+      modelSelect.appendChild(option);
+    });
+
+    modelSelect.addEventListener("change", async (e) => {
+      const selectedIndex = e.target.value;
+      const item = records[selectedIndex];
+      if (item) {
+        await loadModel(item.path, item.name);
+      }
+    });
+
+    // AR内でモデル選択
+    menu.clear();
+    const spacing = 0.2;
+    const total = records.length;
+
+    records.forEach((item, i) => {
+      const btn = createLabelButton(item.name);
+      btn.userData.path = item.path;
+      btn.userData.name = item.name;
+      btn.position.x = (i - (total - 1) / 2) * spacing;
+      btn.position.y = -0.3;
+      btn.position.z = -0.2;
+      menu.add(btn);
+    });
+
+    if (records[0]) {
+      await loadModel(records[0].path, records[0].name);
+    }
+  };
+
+  loadMenuFromCSV();
+
+  // 状態用
+  let mesh = null;
+  let txts = [];
+  let isScaling = false;
+  let isRotating = false;
+  let initialDistance = null;
+  let initialScale = 1;
+  let lastCenterPos = null;
+  let lastCtrlPos = null;
+
+  // イージング
+  const easing = 0.1;
+  let targetPosition = new THREE.Vector3();
+  let targetScale = new THREE.Vector3(1, 1, 1);
+  let targetRotation = new THREE.Euler();
+
+  const offy = isVisionPro() ? 0.6 : 0;
+
+  let isLoadingModel = false;
+
+  // モデルをロードして表示
+  async function loadModel(path, name) {
+    if (isLoadingModel) return;
+    isLoadingModel = true;
+    if (currentModel) {
+      currentModel.traverse((child) => {
+        if (child.isMesh) {
+          child.geometry.dispose();
+          if (child.material.map) child.material.map.dispose();
+          if (child.material) child.material.dispose();
+        }
+      });
+      scene.remove(currentModel);
+      txts.forEach(t => scene.remove(t));
+      txts = [];
+      currentModel = null;
+    }
+
+    const model = await waitLoadGLTF(path);
+    model.userData.path = path;
+    model.position.set(0, offy - 0.2, -0.5);
+    model.scale.set(1, 1, 1);
+    scene.add(model);
+    currentModel = model;
+
+    mesh = model.getObjectByProperty("type", "Mesh");
+
+    let txt1 = createModelText("100%", 0.1);
+    let txt2 = createModelText(name, 0.2);
+    txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
+    txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
+    scene.add(txt1);
+    scene.add(txt2);
+    txts = [txt1, txt2];
+
+    // ターゲット初期化
+    targetPosition.copy(model.position);
+    targetScale.set(1, 1, 1);
+    targetRotation.set(0, 0, 0);
+
+    // ハンドトラックによるモデル動作制御
+    model.animate = () => {
+      const selectedCtrls = ctrls.filter(c => c.selected);
+
+      if (selectedCtrls.length === 2) {
+        const p1 = selectedCtrls[0].position;
+        const p2 = selectedCtrls[1].position;
+        const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+        const dist = p1.distanceTo(p2);
+
+        if (!isScaling) {
+          initialDistance = dist;
+          initialScale = model.scale.x;
+          lastCenterPos = center.clone();
+          isScaling = true;
+          isRotating = false;
+        } else {
+          const scaleFactor = dist / initialDistance;
+          const newScale = initialScale * scaleFactor;
+          targetScale.set(newScale, newScale, newScale);
+
+          const delta = center.clone().sub(lastCenterPos);
+          targetPosition.add(delta);
+          lastCenterPos.copy(center);
+        }
+        lastCtrlPos = null;
+        return;
+      }
+
+      if (selectedCtrls.length === 1) {
+        const currentPos = selectedCtrls[0].position;
+        if (!isRotating) {
+          lastCtrlPos = currentPos.clone();
+          isRotating = true;
+          isScaling = false;
+          initialDistance = null;
+          lastCenterPos = null;
+        } else {
+          const delta = currentPos.clone().sub(lastCtrlPos);
+          targetRotation.x -= delta.y * 8.0;
+          targetRotation.y += delta.x * 8.0;
+          // targetRotation.z += delta.z * 8.0;
+          lastCtrlPos.copy(currentPos);
+        }
+        return;
+      }
+
+      isScaling = false;
+      isRotating = false;
+      initialDistance = null;
+      lastCenterPos = null;
+      lastCtrlPos = null;
+    };
+    isLoadingModel = false;
+  }
+
+  // === スマホ・PC用 ===
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+
+  renderer.domElement.addEventListener("click", (event) => {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(menu.children);
+    if (intersects.length > 0) {
+      const clicked = intersects[0].object;
+      loadModel(clicked.userData.path, clicked.userData.name);
+    }
+  });
+
+  let isUserRotating = false;
+  let isUserScaling = false;
+  let prevMouse = { x: 0, y: 0 };
+  let isLeftDragging = false;
+  let isRightDragging = false;
+  let lastMousePos = null;
+  let initialTouchDist = 0;
+  let lastTouchCenter = null;
+
+  renderer.domElement.addEventListener("mousedown", (e) => {
+    if (e.button === 0) {
+      isLeftDragging = true;
+      lastMousePos = { x: e.clientX, y: e.clientY };
+    } else if (e.button === 2) {
+      isRightDragging = true;
+      lastMousePos = { x: e.clientX, y: e.clientY };
+    }
+  });
+
+  renderer.domElement.addEventListener("mousemove", (e) => {
+    if (!currentModel || !lastMousePos) return;
+
+    const dx = e.clientX - lastMousePos.x;
+    const dy = e.clientY - lastMousePos.y;
+
+    const normDX = dx / window.innerWidth;
+    const normDY = dy / window.innerHeight;
+
+    const rotateFactor = 8.0;
+    const moveFactor = 1.0;
+
+    if (isLeftDragging) {
+      targetRotation.y += normDX * rotateFactor;
+      targetRotation.x += normDY * rotateFactor;
+    } else if (isRightDragging) {
+      targetPosition.x += normDX * moveFactor;
+      targetPosition.y -= normDY * moveFactor;
+    }
+
+    lastMousePos = { x: e.clientX, y: e.clientY };
+  });
+
+  renderer.domElement.addEventListener("mouseup", (e) => {
+    if (e.button === 0) isLeftDragging = false;
+    if (e.button === 2) isRightDragging = false;
+    lastMousePos = null;
+  });
+
+  renderer.domElement.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
+
+  renderer.domElement.addEventListener("wheel", (e) => {
+    if (!currentModel) return;
+    const scaleDelta = e.deltaY < 0 ? 1.1 : 0.9;
+    targetScale.multiplyScalar(scaleDelta);
+  });
+
+  renderer.domElement.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 2) {
+      isUserScaling = true;
+      // スケーリング
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      initialTouchDist = Math.hypot(dx, dy);
+      initialScale = currentModel?.scale?.x || 1;
+      // 平行移動
+      lastTouchCenter = {
+        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+      };
+    } else if (e.touches.length === 1) {
+      isUserRotating = true;
+      prevMouse.x = e.touches[0].clientX;
+      prevMouse.y = e.touches[0].clientY;
+    }
+  });
+
+  renderer.domElement.addEventListener("touchmove", (e) => {
+    if (e.touches.length === 2 && isUserScaling && currentModel) {
+      event.preventDefault();
+      // スケーリング
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      const scaleFactor = dist / initialTouchDist;
+      targetScale.setScalar(initialScale * scaleFactor);
+      // 平行移動
+      const newCenter = {
+        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+      };
+      const deltaX = (newCenter.x - lastTouchCenter.x) / window.innerWidth;
+      const deltaY = (newCenter.y - lastTouchCenter.y) / window.innerHeight;
+      const moveFactor = 1.0;
+      targetPosition.x += deltaX * moveFactor;
+      targetPosition.y -= deltaY * moveFactor;
+      lastTouchCenter = newCenter;
+    } else if (e.touches.length === 1 && isUserRotating && currentModel) {
+      event.preventDefault();
+      const dx = e.touches[0].clientX - prevMouse.x;
+      const dy = e.touches[0].clientY - prevMouse.y;
+      targetRotation.y += dx * 0.01;
+      targetRotation.x += dy * 0.01;
+      prevMouse.x = e.touches[0].clientX;
+      prevMouse.y = e.touches[0].clientY;
+    }
+  });
+
+  renderer.domElement.addEventListener("touchend", () => {
+    isUserScaling = false;
+    isUserRotating = false;
+  });
+
+  // メインループ
+  renderer.setAnimationLoop(() => {
+    if (currentModel) {
+      currentModel.animate();
+
+      // イージング補間適用
+      currentModel.position.lerp(targetPosition, easing);
+      currentModel.scale.lerp(targetScale, easing);
+      if (mesh) {
+        mesh.rotation.x += (targetRotation.x - mesh.rotation.x) * easing;
+        mesh.rotation.y += (targetRotation.y - mesh.rotation.y) * easing;
+        mesh.rotation.z += (targetRotation.z - mesh.rotation.z) * easing;
+      }
+
+      // スケール文字の更新
+      const scalePercent = Math.round(currentModel.scale.x * 100);
+      if (txts[0]) {
+        scene.remove(txts[0]);
+        const newTxt = createModelText(`${scalePercent}%`, 0.1);
+        newTxt.position.set(currentModel.position.x, currentModel.position.y + 0.2, currentModel.position.z);
+        scene.add(newTxt);
+        txts[0] = newTxt;
+      }
+
+      // テキストの追従
+      txts.forEach(i => i.lookAt(camera.position));
+    }
+
+    // メニュー（モデル）の選択
+    for (const ctrl of ctrls) {
+      if (ctrl.selected && !ctrl.userData.justSelected) {
+        ctrl.userData.justSelected = true;
+        onMenuClick(ctrl);
+      } else if (!ctrl.selected) {
+        ctrl.userData.justSelected = false;
+      }
+    }
+
+    renderer.render(scene, camera);
+  });
+  </script>
+</body>
+</html>
