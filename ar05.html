@@ -5,6 +5,19 @@
   <title>AR Model Viewer</title>
   <meta name="viewport" content="width=device-width">
   <link rel="icon" href="data:">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+    }
+    #container {
+      height: 0%;
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -13,6 +26,7 @@
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar04.html">src on GitHub</a><br>
   </header>
+  <div id="container"></div>
 
   <script type="importmap">
   {
@@ -27,6 +41,7 @@
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
 
+  await initXR();
 
   // CSVパース関数
   function parseCSV(csvData) {
@@ -403,13 +418,6 @@
 
     renderer.render(scene, camera);
   });
-
-  // 非XR環境で通常描画を始める
-  if (!navigator.xr) {
-    renderer.setAnimationLoop(() => {
-      renderer.render(scene, camera);
-    });
-  }
   </script>
 </body>
 </html>
