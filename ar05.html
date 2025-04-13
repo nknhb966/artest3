@@ -8,13 +8,16 @@
 </head>
 <body>
   <header>
-    <h1>AR Model</h1>
+    <h1>AR Model.</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
     <label for="modelSelect">モデルを選択：</label>
-    <select id="modelSelect"></select>
+    <select id="modelSelect">
+      <option value="">読み込み中...</option>
+    </select>
   </header>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
   <script type="importmap">
   {
@@ -98,7 +101,7 @@
 
     // ブラウザモードでモデル選択
     const modelSelect = document.getElementById("modelSelect");
-    modelSelect.innerHTML = "";
+    // modelSelect.innerHTML = "";
 
     records.forEach((item, index) => {
       const option = document.createElement("option");
@@ -111,7 +114,11 @@
       const selectedIndex = e.target.value;
       const item = records[selectedIndex];
       if (item) {
+try {
         await loadModel(item.path, item.name);
+} catch (err) {
+  console.error("GLB読み込み失敗:", path, err);
+}
       }
     });
 
@@ -176,6 +183,7 @@
     }
 
     const model = await waitLoadGLTF(path);
+
     model.userData.path = path;
     model.position.set(0, offy - 0.2, -0.5);
     model.scale.set(1, 1, 1);
