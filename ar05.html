@@ -3,13 +3,14 @@
 <head>
   <meta charset="utf-8">
   <title>AR Model Viewer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width">
   <link rel="icon" href="data:">
 </head>
 <body>
   <header>
-    <h1>AR model</h1>
-    LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a><br>
+    <h1>AR Model</h1>
+    LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
+    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar04.html">src on GitHub</a><br>
   </header>
 
@@ -26,12 +27,15 @@
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
 
+  // CSVパース関数
   function parseCSV(csvData) {
     const lines = csvData.split('\n');
     const result = [];
     const headers = lines[0].split(',');
     for (let i = 1; i < lines.length; i++) {
-      if (lines[i].trim() === '') continue;
+      if (lines[i].trim() === '') {
+        continue;
+      }
       const obj = {};
       const currentline = lines[i].split(',');
       for (let j = 0; j < headers.length; j++) {
@@ -42,6 +46,7 @@
     return result;
   }
 
+  // ラベルボタン作成関数
   const createLabelButton = (text, width = 512, height = 128) => {
     const canvas = document.createElement("canvas");
     canvas.width = width;
@@ -54,6 +59,7 @@
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(text, width / 2, height / 2);
+
     const texture = new THREE.CanvasTexture(canvas);
     const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
     const geometry = new THREE.PlaneGeometry(0.16, 0.04);
@@ -65,6 +71,7 @@
   const menu = new THREE.Group();
   scene.add(menu);
 
+  // モデル操作関連
   let currentModel = null;
 
   const onMenuClick = (ctrl) => {
@@ -77,8 +84,10 @@
     }
   };
 
+  // ロード時の制御
   const csvURL = "https://nknhb966.github.io/artest3/models.csv";
   const loadMenuFromCSV = async () => {
+
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
 
@@ -89,6 +98,7 @@
     menu.clear();
     const spacing = 0.2;
     const total = records.length;
+
     records.forEach((item, i) => {
       const btn = createLabelButton(item.name);
       btn.userData.path = item.path;
@@ -106,9 +116,9 @@
 
   loadMenuFromCSV();
 
+  // 状態用
   let mesh = null;
   let txts = [];
-
   let isScaling = false;
   let isRotating = false;
   let initialDistance = null;
@@ -116,20 +126,18 @@
   let lastCenterPos = null;
   let lastCtrlPos = null;
 
+  // イージング
   const easing = 0.1;
   let targetPosition = new THREE.Vector3();
   let targetScale = new THREE.Vector3(1, 1, 1);
   let targetRotation = new THREE.Euler();
 
-  camera.position.y = 0;
-  // if (!navigator.xr) {
-    // camera.position.set(0, 1.2, 2);
-    camera.position.set(0, 0, 0.5);
-  // }
-
+  camera.position.set(0, 0, 0.5);
   const offy = isVisionPro() ? 0.6 : 0;
+
   let isLoadingModel = false;
 
+  // モデルをロードして表示
   async function loadModel(path, name) {
     if (isLoadingModel) return;
     isLoadingModel = true;
@@ -164,10 +172,12 @@
     scene.add(txt2);
     txts = [txt1, txt2];
 
+    // ターゲット初期化
     targetPosition.copy(model.position);
     targetScale.set(1, 1, 1);
     targetRotation.set(0, 0, 0);
 
+    // ハンドトラックによるモデル動作制御
     model.animate = () => {
       const selectedCtrls = ctrls.filter(c => c.selected);
 
@@ -176,6 +186,7 @@
         const p2 = selectedCtrls[1].position;
         const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
         const dist = p1.distanceTo(p2);
+
         if (!isScaling) {
           initialDistance = dist;
           initialScale = model.scale.x;
@@ -186,6 +197,7 @@
           const scaleFactor = dist / initialDistance;
           const newScale = initialScale * scaleFactor;
           targetScale.set(newScale, newScale, newScale);
+
           const delta = center.clone().sub(lastCenterPos);
           targetPosition.add(delta);
           lastCenterPos.copy(center);
@@ -206,6 +218,7 @@
           const delta = currentPos.clone().sub(lastCtrlPos);
           targetRotation.x -= delta.y * 8.0;
           targetRotation.y += delta.x * 8.0;
+          // targetRotation.z += delta.z * 8.0;
           lastCtrlPos.copy(currentPos);
         }
         return;
@@ -220,7 +233,7 @@
     isLoadingModel = false;
   }
 
-  // === 新規追加：スマホ・PC用 ===
+  // === スマホ・PC用 ===
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
 
@@ -245,48 +258,47 @@
   let lastTouchCenter = null;
 
   renderer.domElement.addEventListener("mousedown", (e) => {
-  if (e.button === 0) {
-    isLeftDragging = true;
-    lastMousePos = { x: e.clientX, y: e.clientY };
-  } else if (e.button === 2) {
-    isRightDragging = true;
-    lastMousePos = { x: e.clientX, y: e.clientY };
-  }
-});
+    if (e.button === 0) {
+      isLeftDragging = true;
+      lastMousePos = { x: e.clientX, y: e.clientY };
+    } else if (e.button === 2) {
+      isRightDragging = true;
+      lastMousePos = { x: e.clientX, y: e.clientY };
+    }
+  });
 
   renderer.domElement.addEventListener("mousemove", (e) => {
-  if (!currentModel || !lastMousePos) return;
+    if (!currentModel || !lastMousePos) return;
 
-  const dx = e.clientX - lastMousePos.x;
-  const dy = e.clientY - lastMousePos.y;
+    const dx = e.clientX - lastMousePos.x;
+    const dy = e.clientY - lastMousePos.y;
 
-  const normDX = dx / window.innerWidth;
-  const normDY = dy / window.innerHeight;
+    const normDX = dx / window.innerWidth;
+    const normDY = dy / window.innerHeight;
 
-  const rotateFactor = 8.0;
-  const moveFactor = 1.0;
+    const rotateFactor = 8.0;
+    const moveFactor = 1.0;
 
-  if (isLeftDragging) {
-    targetRotation.y += normDX * rotateFactor;
-    targetRotation.x += normDY * rotateFactor;
-  } else if (isRightDragging) {
-    targetPosition.x += normDX * moveFactor;
-    targetPosition.y -= normDY * moveFactor;
-  }
+    if (isLeftDragging) {
+      targetRotation.y += normDX * rotateFactor;
+      targetRotation.x += normDY * rotateFactor;
+    } else if (isRightDragging) {
+      targetPosition.x += normDX * moveFactor;
+      targetPosition.y -= normDY * moveFactor;
+    }
 
-  lastMousePos = { x: e.clientX, y: e.clientY };
-});
+    lastMousePos = { x: e.clientX, y: e.clientY };
+  });
 
   renderer.domElement.addEventListener("mouseup", (e) => {
-  if (e.button === 0) isLeftDragging = false;
-  if (e.button === 2) isRightDragging = false;
-  lastMousePos = null;
-});
+    if (e.button === 0) isLeftDragging = false;
+    if (e.button === 2) isRightDragging = false;
+    lastMousePos = null;
+  });
 
-
-renderer.domElement.addEventListener("contextmenu", (e) => {
-  e.preventDefault();
-});
+  renderer.domElement.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
 
   renderer.domElement.addEventListener("wheel", (e) => {
     if (!currentModel) return;
@@ -350,9 +362,12 @@ renderer.domElement.addEventListener("contextmenu", (e) => {
     isUserRotating = false;
   });
 
+  // メインループ
   renderer.setAnimationLoop(() => {
     if (currentModel) {
       currentModel.animate();
+
+      // イージング補間適用
       currentModel.position.lerp(targetPosition, easing);
       currentModel.scale.lerp(targetScale, easing);
       if (mesh) {
@@ -361,6 +376,7 @@ renderer.domElement.addEventListener("contextmenu", (e) => {
         mesh.rotation.z += (targetRotation.z - mesh.rotation.z) * easing;
       }
 
+      // スケール文字の更新
       const scalePercent = Math.round(currentModel.scale.x * 100);
       if (txts[0]) {
         scene.remove(txts[0]);
@@ -370,9 +386,11 @@ renderer.domElement.addEventListener("contextmenu", (e) => {
         txts[0] = newTxt;
       }
 
+      // テキストの追従
       txts.forEach(i => i.lookAt(camera.position));
     }
 
+    // メニュー（モデル）の選択
     for (const ctrl of ctrls) {
       if (ctrl.selected && !ctrl.userData.justSelected) {
         ctrl.userData.justSelected = true;
