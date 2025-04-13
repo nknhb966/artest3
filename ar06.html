@@ -148,27 +148,17 @@
     const ambientLight = new THREE.AmbientLight(0xffffff, 3);
     scene.add(ambientLight);
 
+    // モデルをロードしてModel-Viewerで表示
+    const viewer = document.getElementById("viewer");
+
     const res = await fetch(csvURL);
     const text = await res.text();
     const records = parseCSV(text);
-
-    // モデルをロードしてModel-Viewerで表示
-    const viewer = document.getElementById("viewer");
 
     async function loadCSV(url) {
       const response = await fetch(url);
       const text = await response.text();
       return parseCSV(text);
-    }
-
-    async function loadMV(path, name) {
-      viewer.src = path;
-      viewer.alt = name;
-    }
-
-    // Model-Viewerで初期表示
-    if (records.length > 0) {
-      await loadMV(records[0].path, records[0].name);
     }
 
     // ブラウザモードでモデル選択
@@ -182,6 +172,11 @@
       modelSelect.appendChild(option);
     });
 
+    async function loadMV(path, name) {
+      viewer.src = path;
+      viewer.alt = name;
+    }
+
     modelSelect.addEventListener("change", async (e) => {
       const selectedIndex = e.target.value;
       const item = records[selectedIndex];
@@ -190,6 +185,11 @@
         await loadModel(item.path, item.name);
       }
     });
+
+    // Model-Viewerで初期表示
+    if (records.length > 0) {
+      await loadMV(records[0].path, records[0].name);
+    }
 
     // AR内でモデル選択
     menu.clear();
