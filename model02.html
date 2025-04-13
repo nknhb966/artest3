@@ -60,6 +60,19 @@
   </style>
 </head>
 <body>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://code4fukui.github.io/three.js/build/three.module.js",
+      "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+  import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
+  import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
+  </script>
 
   <div id="viewer-container">
     <model-viewer
