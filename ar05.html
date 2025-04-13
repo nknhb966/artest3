@@ -15,7 +15,6 @@
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
   </header>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
   <script type="importmap">
   {
@@ -29,7 +28,6 @@
   <script type="module">
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
-await initXR();
 
   // CSVパース関数
   function parseCSV(csvData) {
@@ -113,11 +111,7 @@ await initXR();
       const selectedIndex = e.target.value;
       const item = records[selectedIndex];
       if (item) {
-try {
         await loadModel(item.path, item.name);
-} catch (err) {
-  console.error("GLB読み込み失敗:", path, err);
-}
       }
     });
 
@@ -182,7 +176,6 @@ try {
     }
 
     const model = await waitLoadGLTF(path);
-
     model.userData.path = path;
     model.position.set(0, offy - 0.2, -0.5);
     model.scale.set(1, 1, 1);
@@ -430,6 +423,5 @@ try {
     renderer.render(scene, camera);
   });
   </script>
-<div id="container"></div>
 </body>
 </html>
