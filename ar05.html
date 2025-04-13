@@ -15,17 +15,6 @@
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
   </header>
-
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://code4fukui.github.io/three.js/build/three.module.js",
-      "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
-    }
-  }
-  </script>
-
-// jQueryを使えるように読みこむ（他で読み込んでいれば不要です）
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <script>
@@ -54,6 +43,15 @@ window.console.log = text => {
   $('#console').prepend(`${text}<br>`);
 };
 </script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://code4fukui.github.io/three.js/build/three.module.js",
+      "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
+    }
+  }
+  </script>
+
   <script type="module">
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
