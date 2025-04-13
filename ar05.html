@@ -8,7 +8,7 @@
 </head>
 <body>
   <header>
-    <h1>AR Model</h1>
+    <h1>AR Model.</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
@@ -138,7 +138,11 @@ window.console.log = text => {
       const selectedIndex = e.target.value;
       const item = records[selectedIndex];
       if (item) {
+try {
         await loadModel(item.path, item.name);
+} catch (err) {
+  console.error("GLB読み込み失敗:", path, err);
+}
       }
     });
 
@@ -202,11 +206,8 @@ window.console.log = text => {
       currentModel = null;
     }
 
-try {
     const model = await waitLoadGLTF(path);
-} catch (err) {
-  console.error("GLB読み込み失敗:", path, err);
-}
+
     model.userData.path = path;
     model.position.set(0, offy - 0.2, -0.5);
     model.scale.set(1, 1, 1);
