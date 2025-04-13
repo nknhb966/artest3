@@ -27,10 +27,6 @@
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
 
-  window.onload = function(){
-    loadMenuFromCSV();
-  }
-
   // CSVパース関数
   function parseCSV(csvData) {
     const lines = csvData.split('\n');
