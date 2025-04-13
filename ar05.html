@@ -5,26 +5,13 @@
   <title>AR Model Viewer</title>
   <meta name="viewport" content="width=device-width">
   <link rel="icon" href="data:">
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      height: 100%;
-      width: 100%;
-    }
-    #container {
-      height: 0%;
-      width: 100%;
-    }
-  </style>
 </head>
 <body>
   <header>
-    <h1>AR Model+</h1>
+    <h1>AR Model</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
-    APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar04.html">src on GitHub</a><br>
+    APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
   </header>
 
   <script type="importmap">
@@ -40,7 +27,9 @@
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
 
-  await initXR();
+  window.onload = function(){
+    loadMenuFromCSV();
+  }
 
   // CSVパース関数
   function parseCSV(csvData) {
@@ -418,6 +407,5 @@
     renderer.render(scene, camera);
   });
   </script>
-  <div id="container"></div>
 </body>
 </html>
