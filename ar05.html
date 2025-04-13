@@ -202,7 +202,11 @@ window.console.log = text => {
       currentModel = null;
     }
 
+try {
     const model = await waitLoadGLTF(path);
+} catch (err) {
+  console.error("GLB読み込み失敗:", path, err);
+}
     model.userData.path = path;
     model.position.set(0, offy - 0.2, -0.5);
     model.scale.set(1, 1, 1);
