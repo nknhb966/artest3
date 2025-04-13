@@ -8,7 +8,7 @@
 </head>
 <body>
   <header>
-    <h1>AR Model+</h1>
+    <h1>AR Model</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
@@ -29,9 +29,9 @@
   <script type="module">
   // import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   // import * as THREE from "three";
-  import { THREE, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
+  import { THREE, scene, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
-const { renderer, scene, camera } = initXR();
+const { camera } = initXR();
 
   // CSVパース関数
   function parseCSV(csvData) {
