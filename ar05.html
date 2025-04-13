@@ -14,34 +14,6 @@
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
-<script>
-//console.logイベントが発火した時に処理を実行
-window.console.log = text => {
-  // 初回は表示用の要素を作成
-  if (!$('#console').length) {
-    // 画面下部に固定表示する
-　　$('<div id="console"></div>') 
-     .appendTo($('body'))
-     .css({
-      position: 'fixed',
-      bottom: 0,
-      left: 0,
-      width: '100%',
-      height: '100px',
-      padding: '8px',
-      background: 'rgba(0,0,0,0.7)',
-      fontSize: '10px',
-      color: '#fff',
-      zIndex: 1000000
-    });
-  }
-
-  //consoleに本来出力される内容を表示していく
-  $('#console').prepend(`${text}<br>`);
-};
-</script>
   </header>
   <script type="importmap">
   {
@@ -138,11 +110,7 @@ window.console.log = text => {
       const selectedIndex = e.target.value;
       const item = records[selectedIndex];
       if (item) {
-try {
         await loadModel(item.path, item.name);
-} catch (err) {
-  console.error("GLB読み込み失敗:", path, err);
-}
       }
     });
 
