@@ -77,7 +77,9 @@
   <script type="module">
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
+  </script>
 
+  <script>
   async function loadCSV(url) {
     const response = await fetch(url);
     const text = await response.text();
