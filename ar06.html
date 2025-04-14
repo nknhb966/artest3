@@ -160,9 +160,9 @@
       menu.add(btn);
     });
 
-    // if (records[0]) {
-    //   await loadModel(records[0].path, records[0].name);
-    // }
+    if (records[0]) {
+      await loadModel(records[0].path, records[0].name);
+    }
   };
 
   loadMenuFromCSV();
@@ -325,69 +325,69 @@
   });
   </script>
 
-
+<!-- 
   <script>
-  // async function loadCSV(url) {
-  //   const response = await fetch(url);
-  //   const text = await response.text();
-  //   return parseCSV2(text);
-  // }
+  async function loadCSV(url) {
+    const response = await fetch(url);
+    const text = await response.text();
+    return parseCSV2(text);
+  }
 
-  // // CSVパース関数
-  // function parseCSV2(csvData) {
-  //   const lines = csvData.trim().split('\n');
-  //   const headers = lines[0].split(',');
-  //   const result = [];
+  // CSVパース関数
+  function parseCSV2(csvData) {
+    const lines = csvData.trim().split('\n');
+    const headers = lines[0].split(',');
+    const result = [];
 
-  //   for (let i = 1; i < lines.length; i++) {
-  //     const obj = {};
-  //     const currentline = lines[i].split(',');
-  //     for (let j = 0; j < headers.length; j++) {
-  //       obj[headers[j].trim()] = currentline[j].trim();
-  //     }
-  //     result.push(obj);
-  //   }
-  //   return result;
-  // }
+    for (let i = 1; i < lines.length; i++) {
+      const obj = {};
+      const currentline = lines[i].split(',');
+      for (let j = 0; j < headers.length; j++) {
+        obj[headers[j].trim()] = currentline[j].trim();
+      }
+      result.push(obj);
+    }
+    return result;
+  }
 
-  // // モデルをロードしてModel-Viewerで表示
-  // async function initialize() {
-  //   const modelSelect = document.getElementById("modelSelect");
-  //   const viewer = document.getElementById("viewer");
+  // モデルをロードしてModel-Viewerで表示
+  async function initialize() {
+    const modelSelect = document.getElementById("modelSelect");
+    const viewer = document.getElementById("viewer");
 
-  //   const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
-  //   const records = await loadCSV(csvUrl);
+    const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
+    const records = await loadCSV(csvUrl);
 
-  //   modelSelect.innerHTML = "";
-  //   records.forEach((item, index) => {
-  //     const option = document.createElement("option");
-  //     option.value = index;
-  //     option.textContent = item.name;
-  //     modelSelect.appendChild(option);
-  //   });
+    modelSelect.innerHTML = "";
+    records.forEach((item, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = item.name;
+      modelSelect.appendChild(option);
+    });
 
-  //   async function loadMV(path, name) {
-  //     viewer.src = path;
-  //     viewer.alt = name;
-  //   }
+    async function loadMV(path, name) {
+      viewer.src = path;
+      viewer.alt = name;
+    }
 
-  //   modelSelect.addEventListener("change", async (e) => {
-  //     const selectedIndex = e.target.value;
-  //     const item = records[selectedIndex];
-  //     if (item) {
-  //       await loadMV(item.path, item.name);
-  //     }
-  //   });
+    modelSelect.addEventListener("change", async (e) => {
+      const selectedIndex = e.target.value;
+      const item = records[selectedIndex];
+      if (item) {
+        await loadMV(item.path, item.name);
+      }
+    });
 
-  //   // Model-Viewerで初期表示
-  //   if (records.length > 0) {
-  //     await loadMV(records[0].path, records[0].name);
-  //   }
-  // }
+    // Model-Viewerで初期表示
+    if (records.length > 0) {
+      await loadMV(records[0].path, records[0].name);
+    }
+  }
 
-  // document.addEventListener("DOMContentLoaded", () => {
-  //   initialize();
-  // });
-  </script>
+  document.addEventListener("DOMContentLoaded", () => {
+    initialize();
+  });
+  </script> -->
 </body>
 </html>
