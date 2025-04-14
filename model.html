@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Model Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #viewer-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 100%;
+    }
+
+    #ui-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    select {
+      font-size: 16px;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="viewer-container">
+    <model-viewer
+      id="viewer"
+      ar
+      ar-modes="scene-viewer webxr quick-look"
+      camera-controls
+      autoplay
+      src=""
+      alt="3D Model Viewer"
+    >
+    </model-viewer>
+  </div>
+
+  <div id="ui-overlay">
+    <label for="modelSelect">表示するモデル:</label><br/>
+    <select id="modelSelect">
+      <option>読み込み中...</option>
+    </select>
+  </div>
+
+  <script>
+    async function loadCSV(url) {
+      const response = await fetch(url);
+      const text = await response.text();
+      return parseCSV(text);
+    }
+
+    function parseCSV(csvData) {
+      const lines = csvData.trim().split('\n');
+      const headers = lines[0].split(',');
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const obj = {};
+        const currentline = lines[i].split(',');
+        for (let j = 0; j < headers.length; j++) {
+          obj[headers[j].trim()] = currentline[j].trim();
+        }
+        result.push(obj);
+      }
+      return result;
+    }
+
+    async function initialize() {
+      const modelSelect = document.getElementById("modelSelect");
+      const viewer = document.getElementById("viewer");
+
+      const csvUrl = "./models.csv";
+      const records = await loadCSV(csvUrl);
+
+      modelSelect.innerHTML = "";
+      records.forEach((item, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = item.name;
+        modelSelect.appendChild(option);
+      });
+
+      async function loadModel(path, name) {
+        viewer.src = path;
+        viewer.alt = name;
+      }
+
+      modelSelect.addEventListener("change", async (e) => {
+        const selectedIndex = e.target.value;
+        const item = records[selectedIndex];
+        if (item) {
+          await loadModel(item.path, item.name);
+        }
+      });
+
+      // 初期表示
+      if (records.length > 0) {
+        await loadModel(records[0].path, records[0].name);
+      }
+    }
+
+    initialize();
+  </script>
+
+</body>
+</html>
+
