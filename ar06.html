@@ -44,7 +44,7 @@
 </head>
 <body>
   <div id="ui-overlay">
-    <h1>AR Model</h1>
+    <h1>AR Model.</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
@@ -172,7 +172,7 @@
       const item = records[selectedIndex];
       if (item) {
         await loadMV(item.path, item.name);
-        await loadModel(item.path, item.name);
+        // await loadModel(item.path, item.name);
       }
     });
 
@@ -182,23 +182,23 @@
     }
 
     // AR内でモデル選択
-    menu.clear();
-    const spacing = 0.2;
-    const total = records.length;
+    // menu.clear();
+    // const spacing = 0.2;
+    // const total = records.length;
 
-    records.forEach((item, i) => {
-      const btn = createLabelButton(item.name);
-      btn.userData.path = item.path;
-      btn.userData.name = item.name;
-      btn.position.x = (i - (total - 1) / 2) * spacing;
-      btn.position.y = -0.3;
-      btn.position.z = -0.2;
-      menu.add(btn);
-    });
+    // records.forEach((item, i) => {
+    //   const btn = createLabelButton(item.name);
+    //   btn.userData.path = item.path;
+    //   btn.userData.name = item.name;
+    //   btn.position.x = (i - (total - 1) / 2) * spacing;
+    //   btn.position.y = -0.3;
+    //   btn.position.z = -0.2;
+    //   menu.add(btn);
+    // });
 
-    if (records[0]) {
-      await loadModel(records[0].path, records[0].name);
-    }
+    // if (records[0]) {
+    //   await loadModel(records[0].path, records[0].name);
+    // }
   };
 
   document.addEventListener("DOMContentLoaded", () => {
