@@ -80,15 +80,19 @@
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
 
+  async function loadCSV(url) {
+    const response = await fetch(url);
+    const text = await response.text();
+    return parseCSV(text);
+  }
+
   // CSVパース関数
   function parseCSV(csvData) {
-    const lines = csvData.split('\n');
-    const result = [];
+    const lines = csvData.trim().split('\n');
     const headers = lines[0].split(',');
+    const result = [];
+
     for (let i = 1; i < lines.length; i++) {
-      if (lines[i].trim() === '') {
-        continue;
-      }
       const obj = {};
       const currentline = lines[i].split(',');
       for (let j = 0; j < headers.length; j++) {
@@ -137,28 +141,20 @@
     }
   };
 
-  // ロード時の制御
-  const csvURL = "https://nknhb966.github.io/artest3/models.csv";
-  const loadMenuFromCSV = async () => {
 
+  const loadMenuFromCSV = async () => {
     const ambientLight = new THREE.AmbientLight(0xffffff, 3);
     scene.add(ambientLight);
 
     // モデルをロードしてModel-Viewerで表示
+    const modelSelect = document.getElementById("modelSelect");
     const viewer = document.getElementById("viewer");
 
-    async function loadCSV(url) {
-      const response = await fetch(url);
-      const text = await response.text();
-      return parseCSV(text);
-    }
+    // ロード時の制御
+    const csvURL = "https://nknhb966.github.io/artest3/models.csv";
+    const records = await loadCSV(csvUrl);
 
-const records = await loadCSV(csvUrl);
-
-    // ブラウザモードでモデル選択
-    const modelSelect = document.getElementById("modelSelect");
     modelSelect.innerHTML = "";
-
     records.forEach((item, index) => {
       const option = document.createElement("option");
       option.value = index;
