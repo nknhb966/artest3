@@ -44,7 +44,7 @@
 </head>
 <body>
   <div id="ui-overlay">
-    <h1>AR Model.</h1>
+    <h1>AR Model</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
@@ -53,6 +53,20 @@
   </div>
 
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://code4fukui.github.io/three.js/build/three.module.js",
+      "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+  import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
+  import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
+  </script>
 
   <div id="viewer-container">
     <model-viewer
@@ -67,19 +81,7 @@
     </model-viewer>
   </div>
 
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://code4fukui.github.io/three.js/build/three.module.js",
-      "three/addons/": "https://code4fukui.github.io/three.js/examples/jsm/"
-    }
-  }
-  </script>
-
-  <script type="module">
-  import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
-  import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
-
+  <script>
   async function loadCSV(url) {
     const response = await fetch(url);
     const text = await response.text();
