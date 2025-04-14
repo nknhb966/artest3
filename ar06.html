@@ -44,7 +44,7 @@
 </head>
 <body>
   <div id="ui-overlay">
-    <h1>AR Model</h1>
+    <h1>AR Model.</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
@@ -143,15 +143,15 @@
 
 
   async function initialize() {
-    const ambientLight = new THREE.AmbientLight(0xffffff, 3);
-    scene.add(ambientLight);
+    // const ambientLight = new THREE.AmbientLight(0xffffff, 3);
+    // scene.add(ambientLight);
 
     // モデルをロードしてModel-Viewerで表示
     const modelSelect = document.getElementById("modelSelect");
     const viewer = document.getElementById("viewer");
 
     // ロード時の制御
-    const csvURL = "https://nknhb966.github.io/artest3/models.csv";
+    const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
     const records = await loadCSV(csvUrl);
 
     modelSelect.innerHTML = "";
