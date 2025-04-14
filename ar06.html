@@ -52,11 +52,6 @@
   }
   </script>
 
-  <script type="module">
-  import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
-  import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
-  </script>
-
   <div id="viewer-container">
     <model-viewer
       id="viewer"
@@ -71,7 +66,7 @@
   </div>
 
   <div id="ui-overlay">
-    <h1>AR Model</h1>
+    <h1>AR Model.</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
@@ -79,7 +74,10 @@
     <select id="modelSelect"></select>
   </div>
 
-  <script>
+  <script type="module">
+  import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
+  import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
+
   async function loadCSV(url) {
     const response = await fetch(url);
     const text = await response.text();
@@ -104,47 +102,56 @@
   }
 
   // ラベルボタン作成関数
-  // const createLabelButton = (text, width = 512, height = 128) => {
-  //   const canvas = document.createElement("canvas");
-  //   canvas.width = width;
-  //   canvas.height = height;
-  //   const ctx = canvas.getContext("2d");
-  //   ctx.fillStyle = "#4444ff";
-  //   ctx.fillRect(0, 0, width, height);
-  //   ctx.fillStyle = "#ffffff";
-  //   ctx.font = "48px sans-serif";
-  //   ctx.textAlign = "center";
-  //   ctx.textBaseline = "middle";
-  //   ctx.fillText(text, width / 2, height / 2);
+  const createLabelButton = (text, width = 512, height = 128) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#4444ff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "48px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, width / 2, height / 2);
 
-  //   const texture = new THREE.CanvasTexture(canvas);
-  //   const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-  //   const geometry = new THREE.PlaneGeometry(0.16, 0.04);
-  //   const mesh = new THREE.Mesh(geometry, material);
-  //   mesh.userData.label = text;
-  //   return mesh;
-  // };
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+    const geometry = new THREE.PlaneGeometry(0.16, 0.04);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.userData.label = text;
+    return mesh;
+  };
 
-  // const menu = new THREE.Group();
-  // scene.add(menu);
+  const menu = new THREE.Group();
+  scene.add(menu);
 
-  // // モデル操作関連
-  // let currentModel = null;
+  // モデル操作関連
+  let currentModel = null;
 
-  // const onMenuClick = (ctrl) => {
-  //   for (const child of menu.children) {
-  //     const worldPos = child.getWorldPosition(new THREE.Vector3());
-  //     if (ctrl.position.distanceTo(worldPos) < 0.05) {
-  //       if (currentModel?.userData?.path === child.userData.path) return;
-  //       loadModel(child.userData.path, child.userData.name);
-  //     }
-  //   }
-  // };
+  const onMenuClick = (ctrl) => {
+    for (const child of menu.children) {
+      const worldPos = child.getWorldPosition(new THREE.Vector3());
+      if (ctrl.position.distanceTo(worldPos) < 0.05) {
+        if (currentModel?.userData?.path === child.userData.path) return;
+        loadModel(child.userData.path, child.userData.name);
+      }
+    }
+  };
 
+  // 状態用
+  let mesh = null;
+  let txts = [];
+  let isScaling = false;
+  let isRotating = false;
+  let initialDistance = null;
+  let initialScale = 1;
+  let lastCenterPos = null;
+  let lastCtrlPos = null;
 
   async function initialize() {
-    // const ambientLight = new THREE.AmbientLight(0xffffff, 3);
-    // scene.add(ambientLight);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 3);
+    scene.add(ambientLight);
 
     // モデルをロードしてModel-Viewerで表示
     const modelSelect = document.getElementById("modelSelect");
@@ -172,7 +179,7 @@
       const item = records[selectedIndex];
       if (item) {
         await loadMV(item.path, item.name);
-        // await loadModel(item.path, item.name);
+        await loadModel(item.path, item.name);
       }
     });
 
@@ -182,186 +189,175 @@
     }
 
     // AR内でモデル選択
-    // menu.clear();
-    // const spacing = 0.2;
-    // const total = records.length;
+    menu.clear();
+    const spacing = 0.2;
+    const total = records.length;
 
-    // records.forEach((item, i) => {
-    //   const btn = createLabelButton(item.name);
-    //   btn.userData.path = item.path;
-    //   btn.userData.name = item.name;
-    //   btn.position.x = (i - (total - 1) / 2) * spacing;
-    //   btn.position.y = -0.3;
-    //   btn.position.z = -0.2;
-    //   menu.add(btn);
-    // });
+    records.forEach((item, i) => {
+      const btn = createLabelButton(item.name);
+      btn.userData.path = item.path;
+      btn.userData.name = item.name;
+      btn.position.x = (i - (total - 1) / 2) * spacing;
+      btn.position.y = -0.3;
+      btn.position.z = -0.2;
+      menu.add(btn);
+    });
 
-    // if (records[0]) {
-    //   await loadModel(records[0].path, records[0].name);
-    // }
+    if (records[0]) {
+      await loadModel(records[0].path, records[0].name);
+    }
   }
 
-  // document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", () => {
     initialize();
-    // loadMenuFromCSV();
-  // });
+  });
 
-  // 状態用
-  // let mesh = null;
-  // let txts = [];
-  // let isScaling = false;
-  // let isRotating = false;
-  // let initialDistance = null;
-  // let initialScale = 1;
-  // let lastCenterPos = null;
-  // let lastCtrlPos = null;
+  // イージング
+  const easing = 0.1;
+  let targetPosition = new THREE.Vector3();
+  let targetScale = new THREE.Vector3(1, 1, 1);
+  let targetRotation = new THREE.Euler();
 
-  // // イージング
-  // const easing = 0.1;
-  // let targetPosition = new THREE.Vector3();
-  // let targetScale = new THREE.Vector3(1, 1, 1);
-  // let targetRotation = new THREE.Euler();
+  const offy = isVisionPro() ? 0.6 : 0;
 
-  // const offy = isVisionPro() ? 0.6 : 0;
+  let isLoadingModel = false;
 
-  // let isLoadingModel = false;
+  // モデルをロードして表示
+  async function loadModel(path, name) {
+    if (isLoadingModel) return;
+    isLoadingModel = true;
+    if (currentModel) {
+      currentModel.traverse((child) => {
+        if (child.isMesh) {
+          child.geometry.dispose();
+          if (child.material.map) child.material.map.dispose();
+          if (child.material) child.material.dispose();
+        }
+      });
+      scene.remove(currentModel);
+      txts.forEach(t => scene.remove(t));
+      txts = [];
+      currentModel = null;
+    }
 
-  // // モデルをロードして表示
-  // async function loadModel(path, name) {
-  //   if (isLoadingModel) return;
-  //   isLoadingModel = true;
-  //   if (currentModel) {
-  //     currentModel.traverse((child) => {
-  //       if (child.isMesh) {
-  //         child.geometry.dispose();
-  //         if (child.material.map) child.material.map.dispose();
-  //         if (child.material) child.material.dispose();
-  //       }
-  //     });
-  //     scene.remove(currentModel);
-  //     txts.forEach(t => scene.remove(t));
-  //     txts = [];
-  //     currentModel = null;
-  //   }
+    const model = await waitLoadGLTF(path);
+    model.userData.path = path;
+    model.position.set(0, offy - 0.2, -0.5);
+    model.scale.set(1, 1, 1);
+    scene.add(model);
+    currentModel = model;
 
-  //   const model = await waitLoadGLTF(path);
-  //   model.userData.path = path;
-  //   model.position.set(0, offy - 0.2, -0.5);
-  //   model.scale.set(1, 1, 1);
-  //   scene.add(model);
-  //   currentModel = model;
+    mesh = model.getObjectByProperty("type", "Mesh");
 
-  //   mesh = model.getObjectByProperty("type", "Mesh");
+    let txt1 = createModelText("100%", 0.1);
+    let txt2 = createModelText(name, 0.2);
+    txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
+    txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
+    scene.add(txt1);
+    scene.add(txt2);
+    txts = [txt1, txt2];
 
-  //   let txt1 = createModelText("100%", 0.1);
-  //   let txt2 = createModelText(name, 0.2);
-  //   txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
-  //   txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
-  //   scene.add(txt1);
-  //   scene.add(txt2);
-  //   txts = [txt1, txt2];
+    // ターゲット初期化
+    targetPosition.copy(model.position);
+    targetScale.set(1, 1, 1);
+    targetRotation.set(0, 0, 0);
 
-  //   // ターゲット初期化
-  //   targetPosition.copy(model.position);
-  //   targetScale.set(1, 1, 1);
-  //   targetRotation.set(0, 0, 0);
+    // ハンドトラックによるモデル動作制御
+    model.animate = () => {
+      const selectedCtrls = ctrls.filter(c => c.selected);
 
-  //   // ハンドトラックによるモデル動作制御
-  //   model.animate = () => {
-  //     const selectedCtrls = ctrls.filter(c => c.selected);
+      if (selectedCtrls.length === 2) {
+        const p1 = selectedCtrls[0].position;
+        const p2 = selectedCtrls[1].position;
+        const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+        const dist = p1.distanceTo(p2);
 
-  //     if (selectedCtrls.length === 2) {
-  //       const p1 = selectedCtrls[0].position;
-  //       const p2 = selectedCtrls[1].position;
-  //       const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-  //       const dist = p1.distanceTo(p2);
+        if (!isScaling) {
+          initialDistance = dist;
+          initialScale = model.scale.x;
+          lastCenterPos = center.clone();
+          isScaling = true;
+          isRotating = false;
+        } else {
+          const scaleFactor = dist / initialDistance;
+          const newScale = initialScale * scaleFactor;
+          targetScale.set(newScale, newScale, newScale);
 
-  //       if (!isScaling) {
-  //         initialDistance = dist;
-  //         initialScale = model.scale.x;
-  //         lastCenterPos = center.clone();
-  //         isScaling = true;
-  //         isRotating = false;
-  //       } else {
-  //         const scaleFactor = dist / initialDistance;
-  //         const newScale = initialScale * scaleFactor;
-  //         targetScale.set(newScale, newScale, newScale);
+          const delta = center.clone().sub(lastCenterPos);
+          targetPosition.add(delta);
+          lastCenterPos.copy(center);
+        }
+        lastCtrlPos = null;
+        return;
+      }
 
-  //         const delta = center.clone().sub(lastCenterPos);
-  //         targetPosition.add(delta);
-  //         lastCenterPos.copy(center);
-  //       }
-  //       lastCtrlPos = null;
-  //       return;
-  //     }
+      if (selectedCtrls.length === 1) {
+        const currentPos = selectedCtrls[0].position;
+        if (!isRotating) {
+          lastCtrlPos = currentPos.clone();
+          isRotating = true;
+          isScaling = false;
+          initialDistance = null;
+          lastCenterPos = null;
+        } else {
+          const delta = currentPos.clone().sub(lastCtrlPos);
+          targetRotation.x -= delta.y * 8.0;
+          targetRotation.y += delta.x * 8.0;
+          // targetRotation.z += delta.z * 8.0;
+          lastCtrlPos.copy(currentPos);
+        }
+        return;
+      }
 
-  //     if (selectedCtrls.length === 1) {
-  //       const currentPos = selectedCtrls[0].position;
-  //       if (!isRotating) {
-  //         lastCtrlPos = currentPos.clone();
-  //         isRotating = true;
-  //         isScaling = false;
-  //         initialDistance = null;
-  //         lastCenterPos = null;
-  //       } else {
-  //         const delta = currentPos.clone().sub(lastCtrlPos);
-  //         targetRotation.x -= delta.y * 8.0;
-  //         targetRotation.y += delta.x * 8.0;
-  //         // targetRotation.z += delta.z * 8.0;
-  //         lastCtrlPos.copy(currentPos);
-  //       }
-  //       return;
-  //     }
+      isScaling = false;
+      isRotating = false;
+      initialDistance = null;
+      lastCenterPos = null;
+      lastCtrlPos = null;
+    };
+    isLoadingModel = false;
+  }
 
-  //     isScaling = false;
-  //     isRotating = false;
-  //     initialDistance = null;
-  //     lastCenterPos = null;
-  //     lastCtrlPos = null;
-  //   };
-  //   isLoadingModel = false;
-  // }
+  // メインループ
+  renderer.setAnimationLoop(() => {
+    if (currentModel) {
+      currentModel.animate();
 
-  // // メインループ
-  // renderer.setAnimationLoop(() => {
-  //   if (currentModel) {
-  //     currentModel.animate();
+      // イージング補間適用
+      currentModel.position.lerp(targetPosition, easing);
+      currentModel.scale.lerp(targetScale, easing);
+      if (mesh) {
+        mesh.rotation.x += (targetRotation.x - mesh.rotation.x) * easing;
+        mesh.rotation.y += (targetRotation.y - mesh.rotation.y) * easing;
+        mesh.rotation.z += (targetRotation.z - mesh.rotation.z) * easing;
+      }
 
-  //     // イージング補間適用
-  //     currentModel.position.lerp(targetPosition, easing);
-  //     currentModel.scale.lerp(targetScale, easing);
-  //     if (mesh) {
-  //       mesh.rotation.x += (targetRotation.x - mesh.rotation.x) * easing;
-  //       mesh.rotation.y += (targetRotation.y - mesh.rotation.y) * easing;
-  //       mesh.rotation.z += (targetRotation.z - mesh.rotation.z) * easing;
-  //     }
+      // スケール文字の更新
+      const scalePercent = Math.round(currentModel.scale.x * 100);
+      if (txts[0]) {
+        scene.remove(txts[0]);
+        const newTxt = createModelText(`${scalePercent}%`, 0.1);
+        newTxt.position.set(currentModel.position.x, currentModel.position.y + 0.2, currentModel.position.z);
+        scene.add(newTxt);
+        txts[0] = newTxt;
+      }
 
-  //     // スケール文字の更新
-  //     const scalePercent = Math.round(currentModel.scale.x * 100);
-  //     if (txts[0]) {
-  //       scene.remove(txts[0]);
-  //       const newTxt = createModelText(`${scalePercent}%`, 0.1);
-  //       newTxt.position.set(currentModel.position.x, currentModel.position.y + 0.2, currentModel.position.z);
-  //       scene.add(newTxt);
-  //       txts[0] = newTxt;
-  //     }
+      // テキストの追従
+      txts.forEach(i => i.lookAt(camera.position));
+    }
 
-  //     // テキストの追従
-  //     txts.forEach(i => i.lookAt(camera.position));
-  //   }
+    // メニュー（モデル）の選択
+    for (const ctrl of ctrls) {
+      if (ctrl.selected && !ctrl.userData.justSelected) {
+        ctrl.userData.justSelected = true;
+        onMenuClick(ctrl);
+      } else if (!ctrl.selected) {
+        ctrl.userData.justSelected = false;
+      }
+    }
 
-  //   // メニュー（モデル）の選択
-  //   for (const ctrl of ctrls) {
-  //     if (ctrl.selected && !ctrl.userData.justSelected) {
-  //       ctrl.userData.justSelected = true;
-  //       onMenuClick(ctrl);
-  //     } else if (!ctrl.selected) {
-  //       ctrl.userData.justSelected = false;
-  //     }
-  //   }
-
-  //   renderer.render(scene, camera);
-  // });
+    renderer.render(scene, camera);
+  });
   </script>
 </body>
 </html>
