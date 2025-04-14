@@ -160,9 +160,9 @@
       menu.add(btn);
     });
 
-    if (records[0]) {
-      await loadModel(records[0].path, records[0].name);
-    }
+    // if (records[0]) {
+    //   await loadModel(records[0].path, records[0].name);
+    // }
   };
 
   loadMenuFromCSV();
@@ -350,15 +350,11 @@
     return result;
   }
 
-
-
-
+  // モデルをロードしてModel-Viewerで表示
   async function initialize() {
-    // モデルをロードしてModel-Viewerで表示
     const modelSelect = document.getElementById("modelSelect");
     const viewer = document.getElementById("viewer");
 
-    // ロード時の制御
     const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
     const records = await loadCSV(csvUrl);
 
