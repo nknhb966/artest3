@@ -6,67 +6,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body, html {
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow: hidden;
-    }
-
-    #viewer-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     model-viewer {
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 80vh;
     }
 
-    #ui-overlay {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 10;
-      background: rgba(255, 255, 255, 0.8);
-      padding: 10px;
-      border-radius: 10px;
+    .controls {
+      margin: 10px;
     }
 
     select {
       font-size: 16px;
-      padding: 5px;
+      padding: 5px 10px;
     }
+
   </style>
 </head>
 <body>
-  <div id="viewer-container">
-    <model-viewer
-      id="viewer"
-      ar
-      ar-modes="scene-viewer webxr quick-look"
-      camera-controls
-      autoplay
-      src=""
-      alt="3D Model Viewer"
-    >
-    </model-viewer>
-  </div>
 
-  <div id="ui-overlay">
-    <label for="modelSelect">表示するモデル:</label><br/>
+  <div class="controls">
+    <label for="modelSelect">表示するモデル:</label>
     <select id="modelSelect">
       <option>読み込み中...</option>
     </select>
   </div>
+
+  <model-viewer
+    id="viewer"
+    ar
+    ar-modes="scene-viewer webxr quick-look"
+    src=""
+    alt="3D Model Viewer"
+    camera-controls
+    autoplay
+  >
+  </model-viewer>
 
   <script>
     async function loadCSV(url) {
@@ -95,7 +78,7 @@
       const modelSelect = document.getElementById("modelSelect");
       const viewer = document.getElementById("viewer");
 
-      const csvUrl = "./models.csv";
+      const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
       const records = await loadCSV(csvUrl);
 
       modelSelect.innerHTML = "";
@@ -130,4 +113,3 @@
 
 </body>
 </html>
-
