@@ -66,7 +66,7 @@
   </div>
 
   <div id="ui-overlay">
-    <h1>AR Model.</h1>
+    <h1>AR Model</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
@@ -102,29 +102,29 @@
   }
 
   // ラベルボタン作成関数
-  const createLabelButton = (text, width = 512, height = 128) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#4444ff";
-    ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "48px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, width / 2, height / 2);
+  // const createLabelButton = (text, width = 512, height = 128) => {
+  //   const canvas = document.createElement("canvas");
+  //   canvas.width = width;
+  //   canvas.height = height;
+  //   const ctx = canvas.getContext("2d");
+  //   ctx.fillStyle = "#4444ff";
+  //   ctx.fillRect(0, 0, width, height);
+  //   ctx.fillStyle = "#ffffff";
+  //   ctx.font = "48px sans-serif";
+  //   ctx.textAlign = "center";
+  //   ctx.textBaseline = "middle";
+  //   ctx.fillText(text, width / 2, height / 2);
 
-    const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-    const geometry = new THREE.PlaneGeometry(0.16, 0.04);
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.userData.label = text;
-    return mesh;
-  };
+  //   const texture = new THREE.CanvasTexture(canvas);
+  //   const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+  //   const geometry = new THREE.PlaneGeometry(0.16, 0.04);
+  //   const mesh = new THREE.Mesh(geometry, material);
+  //   mesh.userData.label = text;
+  //   return mesh;
+  // };
 
-  const menu = new THREE.Group();
-  scene.add(menu);
+  // const menu = new THREE.Group();
+  // scene.add(menu);
 
   // モデル操作関連
   let currentModel = null;
