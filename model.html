@@ -22,28 +22,31 @@
 
 .header {
   text-align: center;
-  padding: 4px 0 2px;
+  padding: 6px 0 2px;
   font-family: sans-serif;
 }
 
 .header h1 {
   font-size: 1.5em;
-  margin: 2px 0;
+  margin: 6px 0;
   font-weight: 600;
   line-height: 1.2;
 }
 
-.header p {
-  margin: 8px 0 0;
-  font-size: 0.85em;
+.footer {
+  text-align: center;
+  font-size: 0.8em;
+  padding: 6px 0;
+  font-family: sans-serif;
+  color: #666;
 }
 
-.header a {
+.footer a {
   color: #3366cc;
   text-decoration: none;
 }
 
-.header a:hover {
+.footer a:hover {
   text-decoration: underline;
 }
 
@@ -62,9 +65,6 @@
 
   <div class="header">
     <h1>3DモデルARビューア</h1>
-    <p>
-      使用ライブラリ: <a href="https://modelviewer.dev/" target="_blank" rel="noopener">model-viewer</a>
-    </p>
   </div>
 
   <div class="controls">
@@ -84,6 +84,10 @@
     autoplay
   >
   </model-viewer>
+
+  <footer class="footer">
+    使用ライブラリ: <a href="https://modelviewer.dev/" target="_blank" rel="noopener">model-viewer</a>
+  </footer>
 
   <script>
     async function loadCSV(url) {
