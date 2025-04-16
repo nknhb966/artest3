@@ -20,6 +20,27 @@
       height: 80vh;
     }
 
+    .header {
+      text-align: center;
+      padding: 15px 0 5px;
+      font-family: sans-serif;
+    }
+
+    .header h1 {
+      font-size: 1.5em;
+      margin: 0;
+    }
+
+    .header a {
+      color: #3366cc;
+      text-decoration: none;
+      font-size: 0.9em;
+    }
+
+    .header a:hover {
+      text-decoration: underline;
+    }
+
     .controls {
       margin: 10px;
     }
@@ -32,6 +53,13 @@
   </style>
 </head>
 <body>
+
+  <div class="header">
+    <h1>3DモデルARビューア</h1>
+    <p>
+      使用ライブラリ: <a href="https://modelviewer.dev/" target="_blank" rel="noopener">model-viewer</a>
+    </p>
+  </div>
 
   <div class="controls">
     <label for="modelSelect">表示するモデル:</label>
