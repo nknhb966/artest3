@@ -78,7 +78,7 @@
 
   <!-- 説明セクション -->
   <div class="section" id="howto">
-    <h1>How to Use</h1>
+    <h1>How to Use.</h1>
     <div class="step">
       <h2>Step 1: 準備</h2>
       <p>スマートフォン（iOS または Android）でこのページにアクセスします。</p>
@@ -102,7 +102,7 @@
 
     <!-- AR開始ボタン -->
     <div class="btn_area">
-      <div id="another-ar-button" class="btn" onclick="musicstart();">
+      <div id="another-ar-button" class="btn" onclick="start();">
         ARスタート
       </div>
     </div>
@@ -120,23 +120,22 @@
     </div>
 
     <!-- モデルビューワー -->
-    <model-viewer id="model-viewer"
+    <model-viewer
+      id="viewer"
       ar
       ar-modes="scene-viewer webxr quick-look"
+      src=""
+      alt="3D Model Viewer"
       camera-controls
       autoplay
-      environment-image="neutral"
-      exposure="1.2"
-      shadow-intensity="1">
+    >
     </model-viewer>
+
 
     <!-- デバイス説明 -->
     <div id="device-info" class="section"></div>
 
   </div>
-
-  <!-- 音声 -->
-  <audio id="sound" src="./assets/audio/fukui_sound.mp3"></audio>
 
   <script>
     const ua = navigator.userAgent;
@@ -179,12 +178,7 @@
       modelViewer.style.display = "block";
     }
 
-    function musicstart() {
-      const sound = document.getElementById("sound");
-      if (sound) {
-        sound.play();
-      }
-
+    function start() {
       const modelViewer = document.getElementById("model-viewer");
       if (modelViewer) {
         modelViewer.activateAR();
