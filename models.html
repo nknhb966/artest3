@@ -121,13 +121,25 @@
 
     <!-- モデルビューワー -->
     <model-viewer id="model-viewer"
+      alt="フクイリュウ"
+      src="https://nknhb966.github.io/artest3/models/model02.glb"
+      ios-src="https://nknhb966.github.io/artest3/models/model04.glb"
       ar
-      ar-modes="scene-viewer webxr quick-look"
-      camera-controls
       autoplay
-      environment-image="neutral"
-      exposure="1.2"
-      shadow-intensity="1">
+      camera-controls
+      background-color="#222"
+      magic-leap unstable-webxr
+    >
+    </model-viewer>
+    <model-viewer id="model-viewer2"
+      alt="フクイリュウ"
+      ios-src="https://nknhb966.github.io/artest3/models/model09.glb"
+      ar
+      autoplay
+      camera-controls
+      background-color="#222"
+      magic-leap unstable-webxr
+    >
     </model-viewer>
 
     <!-- デバイス説明 -->
@@ -144,7 +156,7 @@
       document.getElementById("ar-controls").style.display = "block";
       document.getElementById("btn_next").style.display = "none";
 
-      const modelViewer = document.getElementById("model-viewer");
+      const modelViewer = document.querySelector("#model-viewer");
       const deviceInfo = document.getElementById("device-info");
 
       if (isIOS) {
@@ -186,3 +198,5 @@
 
 </body>
 </html>
+
+
