@@ -78,7 +78,7 @@
 
   <!-- 説明セクション -->
   <div class="section" id="howto">
-    <h1>How to Use</h1>
+    <h1>How to Use.</h1>
     <div class="step">
       <h2>Step 1: 準備</h2>
       <p>スマートフォン（iOS または Android）でこのページにアクセスします。</p>
@@ -93,7 +93,7 @@
     </div>
 
     <!-- 「AR表示に進む」ボタン -->
-    <div class="btn_next" id="ar-button" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
+    <div class="btn_next" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
   </div>
 
   <!-- AR起動UI（How to Use は残しつつ追加で表示） -->
@@ -141,9 +141,6 @@
     const isIOS = /iPhone|iPad|iPod/.test(ua);
 
     async function showAR() {
-      // 「使い方を確認したのでAR表示に進む」ボタンを非表示に
-      document.getElementById("ar-button").style.display = "none";
-      // AR起動UIを表示
       document.getElementById("ar-controls").style.display = "block";
 
       const modelViewer = document.getElementById("model-viewer");
@@ -193,3 +190,5 @@
 
 </body>
 </html>
+
+
