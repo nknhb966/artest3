@@ -100,19 +100,34 @@
   <!-- AR起動UI（How to Use は残しつつ追加で表示） -->
   <div id="ar-controls" style="display:none;">
 
-    <!-- AR開始ボタン -->
     <div class="btn_area">
-      <div id="another-ar-button" class="btn" onclick="start();">
+      <div class="btn btn1" onclick="start();">
         ARスタート
+        <script>
+          document
+          .querySelector("#another-ar-button2")
+          .addEventListener("click", (event) => {
+            const modelViewer = document.querySelector("#model-viewer");
+            modelViewer.activateAR();
+          });
+        </script>
       </div>
-    </div>
 
-    <!-- iPhone8以前案内 -->
-    <div class="legacy_area">
-      <a href="https://example.com/ios8start" class="link-btn" target="_blank">
+      <ul class="list_note c_red">
+        <li>「ARスタート」で止まる場合、下段をお試しください</li>
+      </ul>
+
+      <div class="btn btn2" onclick="start();">
         iPhone8以前をご利用の方はこちらからスタート
-      </a>
-    </div>
+        <script>
+          document
+          .querySelector("#another-ar-button3")
+          .addEventListener("click", (event) => {
+            const modelViewer = document.querySelector("#model-viewer2");
+            modelViewer.activateAR();
+          });
+        </script>
+      </div>
 
     <!-- 表示確認メッセージ -->
     <div class="ok_area">
