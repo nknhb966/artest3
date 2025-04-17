@@ -59,6 +59,23 @@
       padding: 5px 10px;
     }
 
+    .select-and-button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    #modelSelect {
+      font-size: 16px;
+      padding: 5px 10px;
+    }
+
+    #arButton {
+      font-size: 16px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -68,10 +85,13 @@
   </div>
 
   <div class="controls">
+    <div class="select-and-button">
     <label for="modelSelect">表示するモデル:</label>
-    <select id="modelSelect">
-      <option>読み込み中...</option>
-    </select>
+      <select id="modelSelect">
+        <option>読み込み中...</option>
+      </select>
+      <button id="arButton">ARで表示</button>
+    </div>
   </div>
 
   <model-viewer
@@ -115,6 +135,7 @@
     async function initialize() {
       const modelSelect = document.getElementById("modelSelect");
       const viewer = document.getElementById("viewer");
+      const arButton = document.getElementById("arButton");
 
       const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
       const records = await loadCSV(csvUrl);
@@ -138,6 +159,11 @@
         if (item) {
           await loadModel(item.path, item.name);
         }
+      });
+
+      // ボタンクリック時にAR起動
+      arButton.addEventListener("click", () => {
+        viewer.activateAR();
       });
 
       // 初期表示
