@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>AR体験ガイド</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f0f0f0;
+      text-align: center;
+      padding: 2em;
+    }
+    h1, h2 {
+      color: #333;
+    }
+    .section {
+      background: #fff;
+      margin: 1em auto;
+      padding: 1.5em;
+      border-radius: 10px;
+      max-width: 600px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .step {
+      text-align: left;
+      margin: 1em 0;
+    }
+    .btn_next {
+      margin: 2em auto;
+      padding: 1em;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      width: fit-content;
+    }
+    .btn_next:hover {
+      background: #0056b3;
+    }
+    .btn_area, .legacy_area, .ok_area {
+      margin-top: 2em;
+    }
+    .btn {
+      display: inline-block;
+      padding: 1em 2em;
+      background: #28a745;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1em;
+    }
+    .btn:hover {
+      background: #1e7e34;
+    }
+    .link-btn {
+      display: inline-block;
+      margin-top: 1em;
+      padding: 0.8em 1.5em;
+      background: #6c757d;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+    .ok-text {
+      margin-top: 2em;
+      font-weight: bold;
+      color: #333;
+    }
+    #model-viewer {
+      width: 100%;
+      height: 400px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 説明セクション -->
+  <div class="section" id="howto">
+    <h1>How to Use</h1>
+    <div class="step">
+      <h2>Step 1: 準備</h2>
+      <p>スマートフォン（iOS または Android）でこのページにアクセスします。</p>
+    </div>
+    <div class="step">
+      <h2>Step 2: 使い方を確認</h2>
+      <p>このページでは、カメラを使ってAR体験が可能です。安全な場所で使用してください。</p>
+    </div>
+    <div class="step">
+      <h2>Step 3: 動作環境</h2>
+      <p>iOSではSafari、AndroidではChromeをご使用ください。ARに対応していない機種では再生できない場合があります。</p>
+    </div>
+
+    <!-- 「AR表示に進む」ボタン -->
+    <div class="btn_next" id="ar-button" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
+  </div>
+
+  <!-- AR起動UI（How to Use は残しつつ追加で表示） -->
+  <div id="ar-controls" style="display:none;">
+    <!-- デバイス説明 -->
+    <div id="device-info" class="section"></div>
+
+    <!-- モデルビューワー -->
+    <model-viewer id="model-viewer"
+      ar
+      ar-modes="scene-viewer webxr quick-look"
+      camera-controls
+      autoplay
+      environment-image="neutral"
+      exposure="1.2"
+      shadow-intensity="1">
+    </model-viewer>
+
+    <!-- AR開始ボタン -->
+    <div class="btn_area">
+      <div id="another-ar-button" class="btn" onclick="musicstart();">
+        ARスタート
+      </div>
+    </div>
+
+    <!-- iPhone8以前案内 -->
+    <div class="legacy_area">
+      <a href="https://example.com/ios8start" class="link-btn" target="_blank">
+        iPhone8以前をご利用の方はこちらからスタート
+      </a>
+    </div>
+
+    <!-- 表示確認メッセージ -->
+    <div class="ok_area">
+      <p class="ok-text">こう表示できるとOK</p>
+    </div>
+  </div>
+
+  <!-- 音声 -->
+  <audio id="sound" src="./assets/audio/fukui_sound.mp3"></audio>
+
+  <script>
+    const ua = navigator.userAgent;
+    const isAndroid = /Android/.test(ua);
+    const isIOS = /iPhone|iPad|iPod/.test(ua);
+
+    async function showAR() {
+      // 「使い方を確認したのでAR表示に進む」ボタンを非表示に
+      document.getElementById("ar-button").style.display = "none";
+      // AR起動UIを表示
+      document.getElementById("ar-controls").style.display = "block";
+
+      const modelViewer = document.getElementById("model-viewer");
+      const deviceInfo = document.getElementById("device-info");
+
+      if (isIOS) {
+        modelViewer.setAttribute("ios-src", "https://nknhb966.github.io/artest3/models/model02.glb");
+        modelViewer.setAttribute("src", "https://nknhb966.github.io/artest3/models/model04.glb");
+        deviceInfo.innerText = "iOSデバイスが検出されました。Safariでご利用ください。";
+      } else if (isAndroid) {
+        let webxrSupported = false;
+        try {
+          if (navigator.xr) {
+            webxrSupported = await navigator.xr.isSessionSupported('immersive-ar');
+          }
+        } catch (e) {
+          console.warn("WebXRサポート確認エラー:", e);
+        }
+
+        const modelPath = webxrSupported
+          ? "https://nknhb966.github.io/artest3/models/model09.glb"
+          : "https://echizencity.github.io/opendata/kokufuhakkutsu/00101_kokufuhakkutsu_small.glb";
+
+        modelViewer.setAttribute("src", modelPath);
+        deviceInfo.innerText = webxrSupported
+          ? "WebXR対応のAndroidデバイスが検出されました。"
+          : "Scene Viewerで表示します（WebXR非対応）。";
+      } else {
+        deviceInfo.innerText = "このデバイスはARに対応していません。スマートフォンでお試しください。";
+      }
+
+      modelViewer.style.display = "block";
+    }
+
+    function musicstart() {
+      const sound = document.getElementById("sound");
+      if (sound) {
+        sound.play();
+      }
+
+      const modelViewer = document.getElementById("model-viewer");
+      if (modelViewer) {
+        modelViewer.activateAR();
+      }
+    }
+  </script>
+
+</body>
+</html>
