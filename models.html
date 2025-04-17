@@ -78,7 +78,7 @@
 
   <!-- 説明セクション -->
   <div class="section" id="howto">
-    <h1>How to Use.</h1>
+    <h1>How to Use</h1>
     <div class="step">
       <h2>Step 1: 準備</h2>
       <p>スマートフォン（iOS または Android）でこのページにアクセスします。</p>
@@ -92,17 +92,16 @@
       <p>iOSではSafari、AndroidではChromeをご使用ください。ARに対応していない機種では再生できない場合があります。</p>
     </div>
 
-    <!-- 「AR表示に進む」ボタン -->
-    <div class="btn_next" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
   </div>
+
+  <!-- 「AR表示に進む」ボタン -->
+  <div id="btn_next" class="btn_next" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
 
   <!-- AR起動UI（How to Use は残しつつ追加で表示） -->
   <div id="ar-controls" style="display:none;">
-    <!-- デバイス説明 -->
-    <div id="device-info" class="section"></div>
 
     <!-- モデルビューワー -->
-    <model-viewer id="model-viewer"
+<!--     <model-viewer id="model-viewer"
       ar
       ar-modes="scene-viewer webxr quick-look"
       camera-controls
@@ -110,7 +109,8 @@
       environment-image="neutral"
       exposure="1.2"
       shadow-intensity="1">
-    </model-viewer>
+    </model-viewer> -->
+
 
     <!-- AR開始ボタン -->
     <div class="btn_area">
@@ -130,6 +130,10 @@
     <div class="ok_area">
       <p class="ok-text">こう表示できるとOK</p>
     </div>
+
+    <!-- デバイス説明 -->
+    <div id="device-info" class="section"></div>
+
   </div>
 
   <!-- 音声 -->
@@ -142,6 +146,7 @@
 
     async function showAR() {
       document.getElementById("ar-controls").style.display = "block";
+      document.getElementById("btn_next").style.display = "none";
 
       const modelViewer = document.getElementById("model-viewer");
       const deviceInfo = document.getElementById("device-info");
