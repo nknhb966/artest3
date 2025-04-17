@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Model Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+
+    h1, h2 {
+      color: #333;
+    }
+    .section {
+      background: #fff;
+      margin: 1em auto;
+      padding: 1.5em;
+      border-radius: 10px;
+      max-width: 600px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .step {
+      text-align: left;
+      margin: 1em 0;
+    }
+    .btn_next {
+      margin: 2em auto;
+      padding: 1em;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      width: fit-content;
+    }
+    .btn_next:hover {
+      background: #0056b3;
+    }
+    .btn_area, .legacy_area, .ok_area {
+      margin-top: 2em;
+    }
+    .btn {
+      display: inline-block;
+      padding: 1em 2em;
+      background: #28a745;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1em;
+    }
+    .btn:hover {
+      background: #1e7e34;
+    }
+    .link-btn {
+      display: inline-block;
+      margin-top: 1em;
+      padding: 0.8em 1.5em;
+      background: #6c757d;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+    .ok-text {
+      margin-top: 2em;
+      font-weight: bold;
+      color: #333;
+    }
+
+    model-viewer {
+      width: 100vw;
+      height: 80vh;
+    }
+
+    .header {
+      text-align: center;
+      padding: 6px 0 2px;
+      font-family: sans-serif;
+    }
+
+    .header h1 {
+      font-size: 1.5em;
+      margin: 6px 0;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 0.8em;
+      padding: 6px 0;
+      font-family: sans-serif;
+      color: #666;
+    }
+
+    .footer a {
+      color: #3366cc;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .controls {
+      margin: 10px;
+    }
+
+    select {
+      font-size: 16px;
+      padding: 5px 10px;
+    }
+
+    .select-and-button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    #modelSelect {
+      font-size: 16px;
+      padding: 5px 10px;
+    }
+
+    #arButton {
+      font-size: 16px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+
+    model-viewer::part(default-ar-button) {
+      display: none;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>3DモデルAR Viewer</h1>
+  </div>
+
+  <!-- 説明セクション -->
+  <div class="section" id="howto">
+    <h1>How to Use</h1>
+    <div class="step">
+      <h2>Step 1: 準備</h2>
+      <p>スマートフォン（iOS または Android）でこのページにアクセスします。</p>
+    </div>
+    <div class="step">
+      <h2>Step 2: 使い方を確認</h2>
+      <p>このページでは、カメラを使ってAR体験が可能です。安全な場所で使用してください。</p>
+    </div>
+    <div class="step">
+      <h2>Step 3: 動作環境</h2>
+      <p>iOSではSafari、AndroidではChromeをご使用ください。ARに対応していない機種では再生できない場合があります。</p>
+    </div>
+
+  </div>
+
+  <div class="controls">
+    <div class="select-and-button">
+    <label for="modelSelect">表示モデル:</label>
+      <select id="modelSelect">
+        <option>読み込み中...</option>
+      </select>
+      <!-- <button id="arButton">ARで表示</button> -->
+    </div>
+  </div>
+
+  <!-- 「AR表示に進む」ボタン -->
+  <div id="btn_next" class="btn_next" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
+
+  <!-- AR起動UI（How to Use は残しつつ追加で表示） -->
+  <div id="ar-controls" style="display:none;">
+
+    <div class="btn_area">
+      <div class="btn btn1" id="arButton"　onclick="start();">
+        ARスタート
+        <script>
+          document
+          .querySelector("#another-ar-button2")
+          .addEventListener("click", (event) => {
+            const modelViewer = document.querySelector("#model-viewer");
+            modelViewer.activateAR();
+          });
+        </script>
+      </div>
+
+      <ul class="list_note c_red">
+        <li>「ARスタート」で止まる場合、下段をお試しください</li>
+      </ul>
+
+      <div class="btn btn2" onclick="start();">
+        iPhone8以前をご利用の方はこちらからスタート
+        <script>
+          document
+          .querySelector("#another-ar-button3")
+          .addEventListener("click", (event) => {
+            const modelViewer = document.querySelector("#model-viewer2");
+            modelViewer.activateAR();
+          });
+        </script>
+      </div>
+
+    <!-- 表示確認メッセージ -->
+    <div class="ok_area">
+      <p class="ok-text">こう表示できるとOK</p>
+    </div>
+
+
+  <model-viewer
+    id="viewer"
+    ar
+    ar-modes="scene-viewer webxr quick-look"
+    src=""
+    alt="3D Model Viewer"
+    camera-controls
+    autoplay
+  >
+  </model-viewer>
+
+  <footer class="footer">
+    使用ライブラリ: <a href="https://modelviewer.dev/" target="_blank" rel="noopener">model-viewer</a>
+  </footer>
+
+  <script>
+    async function loadCSV(url) {
+      const response = await fetch(url);
+      const text = await response.text();
+      return parseCSV(text);
+    }
+
+    function parseCSV(csvData) {
+      const lines = csvData.trim().split('\n');
+      const headers = lines[0].split(',');
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const obj = {};
+        const currentline = lines[i].split(',');
+        for (let j = 0; j < headers.length; j++) {
+          obj[headers[j].trim()] = currentline[j].trim();
+        }
+        result.push(obj);
+      }
+      return result;
+    }
+
+
+    async function showAR() {
+      document.getElementById("ar-controls").style.display = "block";
+      document.getElementById("btn_next").style.display = "none";
+
+    }
+
+
+    async function initialize() {
+      const modelSelect = document.getElementById("modelSelect");
+      const viewer = document.getElementById("viewer");
+      const arButton = document.getElementById("arButton");
+
+      const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
+      const records = await loadCSV(csvUrl);
+
+      modelSelect.innerHTML = "";
+      records.forEach((item, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = item.name;
+        modelSelect.appendChild(option);
+      });
+
+      async function loadModel(path, name) {
+        viewer.src = path;
+        viewer.alt = name;
+      }
+
+      modelSelect.addEventListener("change", async (e) => {
+        const selectedIndex = e.target.value;
+        const item = records[selectedIndex];
+        if (item) {
+          await loadModel(item.path, item.name);
+        }
+      });
+
+      // ボタンクリック時にAR起動
+      arButton.addEventListener("click", () => {
+        viewer.activateAR();
+      });
+
+      // 初期表示
+      if (records.length > 0) {
+        await loadModel(records[0].path, records[0].name);
+      }
+    }
+
+    initialize();
+  </script>
+
+</body>
+</html>
