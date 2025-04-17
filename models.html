@@ -100,18 +100,6 @@
   <!-- AR起動UI（How to Use は残しつつ追加で表示） -->
   <div id="ar-controls" style="display:none;">
 
-    <!-- モデルビューワー -->
-<!--     <model-viewer id="model-viewer"
-      ar
-      ar-modes="scene-viewer webxr quick-look"
-      camera-controls
-      autoplay
-      environment-image="neutral"
-      exposure="1.2"
-      shadow-intensity="1">
-    </model-viewer> -->
-
-
     <!-- AR開始ボタン -->
     <div class="btn_area">
       <div id="another-ar-button" class="btn" onclick="musicstart();">
@@ -130,6 +118,17 @@
     <div class="ok_area">
       <p class="ok-text">こう表示できるとOK</p>
     </div>
+
+    <!-- モデルビューワー -->
+    <model-viewer id="model-viewer"
+      ar
+      ar-modes="scene-viewer webxr quick-look"
+      camera-controls
+      autoplay
+      environment-image="neutral"
+      exposure="1.2"
+      shadow-intensity="1">
+    </model-viewer>
 
     <!-- デバイス説明 -->
     <div id="device-info" class="section"></div>
