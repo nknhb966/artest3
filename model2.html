@@ -171,7 +171,6 @@
       <select id="modelSelect">
         <option>読み込み中...</option>
       </select>
-      <!-- <button id="arButton">ARで表示</button> -->
     </div>
   </div>
 
@@ -193,43 +192,29 @@
           });
         </script>
       </div>
-
-      <ul class="list_note c_red">
-        <li>「ARスタート」で止まる場合、下段をお試しください</li>
-      </ul>
-
-      <div class="btn btn2" onclick="start();">
-        iPhone8以前をご利用の方はこちらからスタート
-        <script>
-          document
-          .querySelector("#another-ar-button3")
-          .addEventListener("click", (event) => {
-            const modelViewer = document.querySelector("#model-viewer2");
-            modelViewer.activateAR();
-          });
-        </script>
-      </div>
+    </div>
 
     <!-- 表示確認メッセージ -->
     <div class="ok_area">
       <p class="ok-text">こう表示できるとOK</p>
     </div>
 
+    <!-- モデル表示 -->
+    <model-viewer
+      id="viewer"
+      ar
+      ar-modes="scene-viewer webxr quick-look"
+      src=""
+      alt="3D Model Viewer"
+      camera-controls
+      autoplay
+    >
+    </model-viewer>
 
-  <model-viewer
-    id="viewer"
-    ar
-    ar-modes="scene-viewer webxr quick-look"
-    src=""
-    alt="3D Model Viewer"
-    camera-controls
-    autoplay
-  >
-  </model-viewer>
-
-  <footer class="footer">
-    使用ライブラリ: <a href="https://modelviewer.dev/" target="_blank" rel="noopener">model-viewer</a>
-  </footer>
+    <footer class="footer">
+      使用ライブラリ: <a href="https://modelviewer.dev/" target="_blank" rel="noopener">model-viewer</a>
+    </footer>
+  </div>
 
   <script>
     async function loadCSV(url) {
