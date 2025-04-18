@@ -170,18 +170,31 @@
 
   const offy = isVisionPro() ? 0.6 : 0;
 
+  // マテリアルの破棄
+  function disposeMaterial(material) {
+    if (Array.isArray(material)) {
+      material.forEach(m => {
+        if (m.map) m.map.dispose();
+        m.dispose();
+      });
+    } else {
+      if (material.map) material.map.dispose();
+      material.dispose();
+    }
+  }
+
   let isLoadingModel = false;
 
   // モデルをロードして表示
   async function loadModel(path, name) {
     if (isLoadingModel) return;
     isLoadingModel = true;
+
     if (currentModel) {
       currentModel.traverse((child) => {
         if (child.isMesh) {
-          child.geometry.dispose();
-          if (child.material.map) child.material.map.dispose();
-          if (child.material) child.material.dispose();
+          child.geometry?.dispose();
+          disposeMaterial(child.material);
         }
       });
       scene.remove(currentModel);
@@ -197,8 +210,6 @@
     scene.add(model);
     currentModel = model;
 
-    mesh = model.getObjectByProperty("type", "Mesh");
-
     let txt1 = createModelText("100%", 0.1);
     let txt2 = createModelText(name, 0.2);
     txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
@@ -207,18 +218,14 @@
     scene.add(txt2);
     txts = [txt1, txt2];
 
-    // ターゲット初期化
     targetPosition.copy(model.position);
     targetScale.set(1, 1, 1);
     targetRotation.set(0, 0, 0);
 
-    // ハンドトラックによるモデル動作制御
     model.animate = () => {
       const selectedCtrls = ctrls.filter(c => c.selected);
-
       if (selectedCtrls.length === 2) {
-        const p1 = selectedCtrls[0].position;
-        const p2 = selectedCtrls[1].position;
+        const [p1, p2] = [selectedCtrls[0].position, selectedCtrls[1].position];
         const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
         const dist = p1.distanceTo(p2);
 
@@ -253,7 +260,6 @@
           const delta = currentPos.clone().sub(lastCtrlPos);
           targetRotation.x -= delta.y * 8.0;
           targetRotation.y += delta.x * 8.0;
-          // targetRotation.z += delta.z * 8.0;
           lastCtrlPos.copy(currentPos);
         }
         return;
@@ -265,8 +271,10 @@
       lastCenterPos = null;
       lastCtrlPos = null;
     };
+
     isLoadingModel = false;
   }
+
 
   // === スマホ・PC用 ===
   const raycaster = new THREE.Raycaster();
@@ -397,35 +405,32 @@
     isUserRotating = false;
   });
 
+  let lastScalePercent = 100;
+
   // メインループ
   renderer.setAnimationLoop(() => {
     if (currentModel) {
       currentModel.animate();
 
-      // イージング補間適用
       currentModel.position.lerp(targetPosition, easing);
       currentModel.scale.lerp(targetScale, easing);
-      if (mesh) {
-        mesh.rotation.x += (targetRotation.x - mesh.rotation.x) * easing;
-        mesh.rotation.y += (targetRotation.y - mesh.rotation.y) * easing;
-        mesh.rotation.z += (targetRotation.z - mesh.rotation.z) * easing;
-      }
+      currentModel.rotation.x += (targetRotation.x - currentModel.rotation.x) * easing;
+      currentModel.rotation.y += (targetRotation.y - currentModel.rotation.y) * easing;
+      currentModel.rotation.z += (targetRotation.z - currentModel.rotation.z) * easing;
 
-      // スケール文字の更新
       const scalePercent = Math.round(currentModel.scale.x * 100);
-      if (txts[0]) {
+      if (txts[0] && scalePercent !== lastScalePercent) {
         scene.remove(txts[0]);
         const newTxt = createModelText(`${scalePercent}%`, 0.1);
         newTxt.position.set(currentModel.position.x, currentModel.position.y + 0.2, currentModel.position.z);
         scene.add(newTxt);
         txts[0] = newTxt;
+        lastScalePercent = scalePercent;
       }
 
-      // テキストの追従
       txts.forEach(i => i.lookAt(camera.position));
     }
 
-    // メニュー（モデル）の選択
     for (const ctrl of ctrls) {
       if (ctrl.selected && !ctrl.userData.justSelected) {
         ctrl.userData.justSelected = true;
@@ -437,6 +442,7 @@
 
     renderer.render(scene, camera);
   });
+
   </script>
 </body>
 </html>
