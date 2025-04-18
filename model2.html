@@ -130,7 +130,7 @@
     }
 
     #bgCanvas {
-/*      display: block;
+      display: block;
       position: fixed;
       top: 0;
       left: 0;
@@ -138,12 +138,7 @@
       width: 100vw;
       height: 100vh;
       pointer-events: none;
-      display: block;*/
-  height: calc(var(--vh) * 100);
-  width: 100vw;
-  position: fixed;
-  top: 0;
-  left: 0;
+      display: block;
     }
 
   </style>
@@ -298,19 +293,14 @@
 
     let polygons = [];
 
-    // function resizeCanvas() {
-    //   canvas.width = window.visualViewport.width;
-    //   canvas.height = window.visualViewport.height;
-    // }
+    function resizeCanvas() {
+      canvas.width = window.visualViewport.width;
+      canvas.height = window.visualViewport.height;
+    }
 
-    // resizeCanvas();
-    // window.addEventListener("resize", resizeCanvas);
-function setVH() {
-  const vh = window.innerHeight * 0.01;
-  document.documentElement.style.setProperty('--vh', `${vh}px`);
-}
-setVH();
-window.addEventListener('resize', setVH);
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
     function createPolygon(x, y, radius, sides, speedX, speedY, rotation, timeOffset) {
       return { x, y, radius, sides, speedX, speedY, rotation , timeOffset};
     }
