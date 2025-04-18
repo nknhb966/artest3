@@ -46,7 +46,7 @@
       margin-bottom: 1em;
     }
 
-    .btn_next, .btn {
+    .btn, .btn_next {
       display: inline-block;
       padding: 0.8em 1.2em;
       background: #cce3f6;
@@ -59,9 +59,15 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .btn_next:hover, .btn:hover {
+    .btn:hover, .btn_next:hover {
       background: #a6c9e2;
       transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      background: #eee;
+      color: #aaa;
+      cursor: not-allowed;
     }
 
     .controls {
@@ -116,6 +122,13 @@
     model-viewer::part(default-ar-button) {
       display: none;
     }
+
+    #loading {
+      display: none;
+      color: #666;
+      font-size: 0.95em;
+      margin-top: 1em;
+    }
   </style>
 </head>
 <body>
@@ -140,23 +153,25 @@
   </div>
 
   <div class="controls">
-    <label>
+    <label for="modelSelect">
       表示モデル:
-      <select id="modelSelect">
-        <option>読み込み中...</option>
-      </select>
     </label>
+    <select id="modelSelect">
+      <option>読み込み中...</option>
+    </select>
   </div>
 
   <div id="btn_next" class="btn_next" role="button" tabindex="0" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
 
   <div id="ar-controls" style="display:none;">
-    <div class="btn" id="arButton" role="button" tabindex="0">ARスタート</div>
+    <div class="btn" id="arButton" role="button" tabindex="0" disabled>ARスタート</div>
 
     <p class="ok-text">こう表示できるとOK</p>
 
     <p>ARがスタートしないときは</p>
     <div class="btn" id="modelButton" role="button" tabindex="0">モデル表示</div>
+
+    <div id="loading">読み込み中...</div>
 
     <model-viewer
       id="viewer"
@@ -190,7 +205,7 @@
         const obj = {};
         const currentline = lines[i].split(',');
         for (let j = 0; j < headers.length; j++) {
-          obj[headers[j].trim()] = currentline[j].trim();
+          obj[headers[j].trim()] = currentline[j]?.trim();
         }
         result.push(obj);
       }
@@ -207,6 +222,7 @@
       const viewer = document.getElementById("viewer");
       const arButton = document.getElementById("arButton");
       const modelButton = document.getElementById("modelButton");
+      const loading = document.getElementById("loading");
 
       const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
 
@@ -215,6 +231,7 @@
         modelSelect.innerHTML = "";
 
         records.forEach((item) => {
+          if (!item.path || !item.name) return;
           const option = document.createElement("option");
           option.value = item.path;
           option.textContent = item.name;
@@ -226,8 +243,11 @@
           viewer.style.display = "none";
           viewer.src = path;
           viewer.alt = name;
+
           viewer.addEventListener("load", () => {
+            loading.style.display = "none";
             viewer.style.display = "block";
+            arButton.disabled = !viewer.canActivateAR;
           }, { once: true });
         }
 
@@ -244,6 +264,7 @@
         });
 
         modelButton.addEventListener("click", () => {
+          loading.style.display = "block";
           viewer.style.display = "block";
         });
 
