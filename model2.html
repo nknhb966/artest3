@@ -302,6 +302,12 @@
       }
     }
 
+    function resizeCanvas() {
+      canvas.width = window.visualViewport.width;
+      canvas.height = window.visualViewport.height;
+    }
+
+    resizeCanvas();
     window.addEventListener("resize", resizeCanvasIfRotated);
 
     function createPolygon(x, y, radius, sides, speedX, speedY, rotation, timeOffset) {
