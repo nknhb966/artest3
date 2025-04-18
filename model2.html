@@ -294,8 +294,8 @@
     let polygons = [];
 
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.width = window.visualViewport.width;
+      canvas.height = window.visualViewport.height;
     }
 
     resizeCanvas();
