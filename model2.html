@@ -2,17 +2,15 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>3D Model Viewer</title>
+  <title>AR Model Viewer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
   <style>
-    html, body {
+    html, body{
       margin: 0;
-      font-family: 'Helvetica Neue', sans-serif;
-      background: #fefefe;
-      color: #444;
-      text-align: center;
+      padding: 0;
       overflow-x: hidden;
+      text-align: center;
     }
 
     .header, .footer {
@@ -140,7 +138,7 @@
 <body>
   <canvas id="bgCanvas"></canvas>
   <div class="header">
-    <h1>AR Viewer</h1>
+    <h1>AR Model Viewer</h1>
   </div>
 
   <div class="section" id="howto">
