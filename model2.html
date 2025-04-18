@@ -130,7 +130,6 @@
     }
 
     #bgCanvas {
-      display: block;
       position: fixed;
       top: 0;
       left: 0;
@@ -293,13 +292,17 @@
 
     let polygons = [];
 
-    function resizeCanvas() {
-      canvas.width = window.visualViewport.width;
-      canvas.height = window.visualViewport.height;
+    let lastOrientation = screen.orientation?.angle || window.orientation;
+
+    function resizeCanvasIfRotated() {
+      const currentOrientation = screen.orientation?.angle || window.orientation;
+      if (currentOrientation !== lastOrientation) {
+        lastOrientation = currentOrientation;
+        resizeCanvas();
+      }
     }
 
-    resizeCanvas();
-    // window.addEventListener("resize", resizeCanvas);
+    window.addEventListener("resize", resizeCanvasIfRotated);
 
     function createPolygon(x, y, radius, sides, speedX, speedY, rotation, timeOffset) {
       return { x, y, radius, sides, speedX, speedY, rotation , timeOffset};
