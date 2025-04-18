@@ -21,7 +21,7 @@
     h1 {
       font-size: 1.8em;
       color: #333;
-      margin: 0.5em 0;
+      margin: 0;
     }
 
     h2 {
@@ -33,7 +33,7 @@
 
     .section {
       background: #f8f9fa;
-      margin: 0.8em auto;
+      margin: auto;
       padding: 1em;
       max-width: 640px;
       border: 1px solid #ddd;
@@ -69,7 +69,7 @@
       margin-bottom: 1em;
     }
 
-    select {
+    label select {
       font-size: 1em;
       padding: 0.5em;
       border-radius: 6px;
@@ -83,6 +83,12 @@
       width: 100%;
       height: 58vh;
       margin-top: 0.8em;
+    }
+
+    @media (max-width: 480px) {
+      model-viewer {
+        height: 45vh;
+      }
     }
 
     .ok-text {
@@ -110,7 +116,6 @@
     model-viewer::part(default-ar-button) {
       display: none;
     }
-
   </style>
 </head>
 <body>
@@ -135,22 +140,23 @@
   </div>
 
   <div class="controls">
-    <label for="modelSelect">表示モデル:</label>
-    <br>
-    <select id="modelSelect">
-      <option>読み込み中...</option>
-    </select>
+    <label>
+      表示モデル:
+      <select id="modelSelect">
+        <option>読み込み中...</option>
+      </select>
+    </label>
   </div>
 
-  <div id="btn_next" class="btn_next" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
+  <div id="btn_next" class="btn_next" role="button" tabindex="0" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
 
   <div id="ar-controls" style="display:none;">
-    <div class="btn" id="arButton">ARスタート</div>
+    <div class="btn" id="arButton" role="button" tabindex="0">ARスタート</div>
 
     <p class="ok-text">こう表示できるとOK</p>
 
     <p>ARがスタートしないときは</p>
-    <div class="btn" id="modelButton">モデル表示</div>
+    <div class="btn" id="modelButton" role="button" tabindex="0">モデル表示</div>
 
     <model-viewer
       id="viewer"
@@ -203,40 +209,51 @@
       const modelButton = document.getElementById("modelButton");
 
       const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
-      const records = await loadCSV(csvUrl);
 
-      modelSelect.innerHTML = "";
-      records.forEach((item, index) => {
-        const option = document.createElement("option");
-        option.value = index;
-        option.textContent = item.name;
-        modelSelect.appendChild(option);
-      });
+      try {
+        const records = await loadCSV(csvUrl);
+        modelSelect.innerHTML = "";
 
-      async function loadModel(path, name) {
-        viewer.src = path;
-        viewer.alt = name;
-      }
+        records.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = item.path;
+          option.textContent = item.name;
+          option.dataset.name = item.name;
+          modelSelect.appendChild(option);
+        });
 
-      modelSelect.addEventListener("change", async (e) => {
-        const selectedIndex = e.target.value;
-        const item = records[selectedIndex];
-        if (item) {
-          await loadModel(item.path, item.name);
+        async function loadModel(path, name) {
+          viewer.style.display = "none";
+          viewer.src = path;
+          viewer.alt = name;
+          viewer.addEventListener("load", () => {
+            viewer.style.display = "block";
+          }, { once: true });
         }
-      });
 
-      arButton.addEventListener("click", () => {
-        viewer.activateAR();
-      });
+        modelSelect.addEventListener("change", async (e) => {
+          const path = e.target.value;
+          const name = e.target.selectedOptions[0].dataset.name;
+          if (path) {
+            await loadModel(path, name);
+          }
+        });
 
-      modelButton.addEventListener("click", () => {
-        viewer.style.display = "block";
-      });
+        arButton.addEventListener("click", () => {
+          viewer.activateAR();
+        });
 
-      // 初期表示
-      if (records.length > 0) {
-        await loadModel(records[0].path, records[0].name);
+        modelButton.addEventListener("click", () => {
+          viewer.style.display = "block";
+        });
+
+        if (records.length > 0) {
+          await loadModel(records[0].path, records[0].name);
+        }
+
+      } catch (error) {
+        alert("モデルの読み込みに失敗しました。インターネット接続をご確認ください。");
+        console.error("CSV読み込みエラー:", error);
       }
     }
 
