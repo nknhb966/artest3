@@ -133,6 +133,229 @@
 
     <model-viewer
       id="viewer"
+      style="display: none;"
+      ar
+      ar-modes="scene-viewer webxr quick-look"
+      src=""
+      alt="3D Model Viewer"
+      camera-controls
+      autoplay
+    ></model-viewer>
+
+
+    <div class="footer">
+      使用ライブラリ: <a href="https://modelviewer.dev/" target="_blank" rel="noopener">model-viewer</a>
+    </div>
+  </div>
+
+  <script>
+    async function loadCSV(url) {
+      const response = await fetch(url);
+      const text = await response.text();
+      return parseCSV(text);
+    }
+
+    function parseCSV(csvData) {
+      const lines = csvData.trim().split('\n');
+      const headers = lines[0].split(',');
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const obj = {};
+        const currentline = lines[i].split(',');
+        for (let j = 0; j < headers.length; j++) {
+          obj[headers[j].trim()] = currentline[j].trim();
+        }
+        result.push(obj);
+      }
+      return result;
+    }
+
+    function showAR() {
+      document.getElementById("ar-controls").style.display = "block";
+      document.getElementById("btn_next").style.display = "none";
+    }
+
+    async function initialize() {
+      const modelSelect = document.getElementById("modelSelect");
+      const viewer = document.getElementById("viewer");
+      const arButton = document.getElementById("arButton");
+
+      const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
+      const records = await loadCSV(csvUrl);
+
+      modelSelect.innerHTML = "";
+      records.forEach((item, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = item.name;
+        modelSelect.appendChild(option);
+      });
+
+      async function loadModel(path, name) {
+        viewer.src = path;
+        viewer.alt = name;
+      }
+
+      modelSelect.addEventListener("change", async (e) => {
+        const selectedIndex = e.target.value;
+        const item = records[selectedIndex];
+        if (item) {
+          await loadModel(item.path, item.name);
+        }
+      });
+
+      arButton.addEventListener("click", () => {
+        viewer.style.display = "block";
+        viewer.activateAR();
+      });
+
+      // 初期表示
+      if (records.length > 0) {
+        await loadModel(records[0].path, records[0].name);
+      }
+    }
+
+    initialize();
+  </script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Model Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f9f9f9;
+      color: #333;
+      text-align: center;
+    }
+
+    .header, .footer {
+      padding: 1em;
+    }
+
+    .footer {
+      font-size: 0.8em;
+      color: #666;
+    }
+
+    .footer a {
+      color: #3366cc;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    h1 {
+      font-size: 1.5em;
+      margin: 1em 0 0.5em;
+    }
+
+    h2 {
+      font-size: 1.1em;
+      margin-top: 1em;
+    }
+
+    .section {
+      background: #fff;
+      margin: 1em auto;
+      padding: 1em;
+      max-width: 600px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      text-align: left;
+    }
+
+    .step {
+      margin-bottom: 1em;
+    }
+
+    .btn_next, .btn {
+      display: inline-block;
+      padding: 0.8em 1.2em;
+      background: #007bff;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1em;
+      border: none;
+      margin-top: 1.5em;
+    }
+
+    .btn:hover, .btn_next:hover {
+      background: #0056b3;
+    }
+
+    .controls {
+      margin-top: 1em;
+    }
+
+    select {
+      font-size: 1em;
+      padding: 0.5em;
+      margin-top: 0.5em;
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 60vh;
+      margin-top: 1em;
+    }
+
+    .ok-text {
+      margin-top: 1.5em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>3DモデルAR Viewer</h1>
+  </div>
+
+  <div class="section" id="howto">
+    <h1>How to Use</h1>
+    <div class="step">
+      <h2>Step 1: 準備</h2>
+      <p>スマートフォン（iOS または Android）でこのページにアクセスします。</p>
+    </div>
+    <div class="step">
+      <h2>Step 2: 使い方を確認</h2>
+      <p>このページでは、カメラを使ってAR体験が可能です。安全な場所で使用してください。</p>
+    </div>
+    <div class="step">
+      <h2>Step 3: 動作環境</h2>
+      <p>iOSではSafari、AndroidではChromeをご使用ください。ARに対応していない機種では再生できない場合があります。</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <label for="modelSelect">表示モデル:</label>
+    <br>
+    <select id="modelSelect">
+      <option>読み込み中...</option>
+    </select>
+  </div>
+
+  <div id="btn_next" class="btn_next" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
+
+  <div id="ar-controls" style="display:none;">
+    <div class="btn" id="arButton">ARスタート</div>
+
+    <p class="ok-text">こう表示できるとOK</p>
+
+    <model-viewer
+      id="viewer"
       ar
       ar-modes="scene-viewer webxr quick-look"
       src=""
