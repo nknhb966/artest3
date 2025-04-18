@@ -93,7 +93,7 @@
 
     model-viewer {
       width: 100%;
-      height: 58vh;
+      height: 80vh;
       margin-top: 0.8em;
     }
 
@@ -314,10 +314,10 @@
       return { x, y, radius, sides, speedX, speedY, rotation , timeOffset};
     }
 
-    function initPolygons(count = 25) {
+    function initPolygons(count = 30) {
       polygons = [];
       for (let i = 0; i < count; i++) {
-        const radius = 30 + Math.random() * 100;
+        const radius = 20 + Math.random() * 80;
         const sides = [1, 2][Math.floor(Math.random() * 2)];
         const speedX = (Math.random() - 0.5) * 0.2;
         const speedY = (Math.random() - 0.5) * 0.2;
