@@ -8,77 +8,74 @@
   <style>
     body {
       margin: 0;
-      font-family: sans-serif;
-      background: #f9f9f9;
-      color: #333;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #fefefe;
+      color: #444;
       text-align: center;
     }
 
     .header, .footer {
-      padding: 1em;
-    }
-
-    .footer {
-      font-size: 0.8em;
-      color: #666;
-    }
-
-    .footer a {
-      color: #3366cc;
-      text-decoration: none;
-    }
-
-    .footer a:hover {
-      text-decoration: underline;
+      padding: 1.5em 1em;
     }
 
     h1 {
-      font-size: 1.5em;
-      margin: 1em 0 0.5em;
+      font-size: 1.8em;
+      color: #333;
+      margin: 0.5em 0;
     }
 
     h2 {
-      font-size: 1.1em;
-      margin-top: 1em;
+      font-size: 1.2em;
+      margin-top: 1.2em;
+      color: #555;
+      font-weight: normal;
     }
 
     .section {
-      background: #fff;
+      background: #f8f9fa;
       margin: 1em auto;
-      padding: 1em;
-      max-width: 600px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      padding: 1.5em;
+      max-width: 640px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
       text-align: left;
     }
 
     .step {
-      margin-bottom: 1em;
+      margin-bottom: 1.5em;
     }
 
     .btn_next, .btn {
       display: inline-block;
-      padding: 0.8em 1.2em;
-      background: #007bff;
-      color: #fff;
-      border-radius: 6px;
+      padding: 0.9em 1.4em;
+      background: #cce3f6;
+      color: #222;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 1em;
       border: none;
+      transition: background 0.3s ease, transform 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .btn:hover, .btn_next:hover {
-      background: #0056b3;
+    .btn_next:hover, .btn:hover {
+      background: #a6c9e2;
+      transform: translateY(-1px);
     }
 
     .controls {
-      margin-top: 1em;
-      margin-bottom: 1.5em;
+      margin-top: 1.5em;
+      margin-bottom: 2em;
     }
 
     select {
       font-size: 1em;
-      padding: 0.5em;
+      padding: 0.6em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      color: #333;
       margin-top: 0.5em;
     }
 
@@ -91,6 +88,23 @@
     .ok-text {
       margin-top: 1.5em;
       font-weight: bold;
+      color: #444;
+    }
+
+    .footer {
+      font-size: 0.85em;
+      color: #888;
+    }
+
+    .footer a {
+      color: #9999cc;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .footer a:hover {
+      color: #6666aa;
+      text-decoration: underline;
     }
 
     model-viewer::part(default-ar-button) {
