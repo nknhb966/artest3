@@ -117,16 +117,31 @@
 
     // AR内でモデル選択
     menu.clear();
-    const spacing = 0.2;
+    const spacingX = 0.2;
+    const spacingY = 0.1;
+    const itemsPerRow = 5;
+    
     const total = records.length;
-
+    const totalRows = Math.ceil(total / itemsPerRow);
+    
     records.forEach((item, i) => {
       const btn = createLabelButton(item.name);
       btn.userData.path = item.path;
       btn.userData.name = item.name;
-      btn.position.x = (i - (total - 1) / 2) * spacing;
-      btn.position.y = -0.3;
+    
+      const row = Math.floor(i / itemsPerRow);
+      const indexInRow = i % itemsPerRow;
+      
+      const itemsInThisRow = (row === totalRows - 1 && total % itemsPerRow !== 0)
+        ? total % itemsPerRow
+        : itemsPerRow;
+    
+      const offsetX = (itemsInThisRow - 1) / 2;
+      btn.position.x = (indexInRow - offsetX) * spacingX;
+    
+      btn.position.y = -0.3 - row * spacingY;
       btn.position.z = -0.2;
+    
       menu.add(btn);
     });
 
