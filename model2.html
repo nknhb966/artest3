@@ -123,10 +123,20 @@
       display: none;
     }
 
+    #bgCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
   </style>
 </head>
 <body>
-
+  <canvas id="bgCanvas"></canvas>
   <div class="header">
     <h1>3DモデルAR Viewer</h1>
   </div>
@@ -268,6 +278,83 @@
     }
 
     initialize();
+
+    // 背景描写
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+  
+    let polygons = [];
+  
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+  
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+  
+    function createPolygon(x, y, radius, sides, speedX, speedY, rotation) {
+      return { x, y, radius, sides, speedX, speedY, rotation };
+    }
+  
+    function initPolygons(count = 20) {
+      polygons = [];
+      for (let i = 0; i < count; i++) {
+        const radius = 30 + Math.random() * 40;
+        const sides = [3, 4, 6, 8][Math.floor(Math.random() * 4)];
+        const speedX = (Math.random() - 0.5) * 0.3;
+        const speedY = (Math.random() - 0.5) * 0.3;
+        const rotation = Math.random() * Math.PI * 2;
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        polygons.push(createPolygon(x, y, radius, sides, speedX, speedY, rotation));
+      }
+    }
+  
+    function drawPolygon(polygon) {
+      const { x, y, radius, sides, rotation } = polygon;
+      ctx.beginPath();
+      for (let i = 0; i <= sides; i++) {
+        const angle = (Math.PI * 2 / sides) * i + rotation;
+        const px = x + Math.cos(angle) * radius;
+        const py = y + Math.sin(angle) * radius;
+        if (i === 0) {
+          ctx.moveTo(px, py);
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+      ctx.closePath();
+      ctx.strokeStyle = "rgba(255, 255, 255, 1)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+  
+    function animate() {
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      grad.addColorStop(0, "#e8f0ff");
+      grad.addColorStop(1, "#f2e9ff");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+      polygons.forEach(polygon => {
+        polygon.x += polygon.speedX;
+        polygon.y += polygon.speedY;
+        polygon.rotation += 0.002;
+  
+        if (polygon.x < -polygon.radius) polygon.x = canvas.width + polygon.radius;
+        if (polygon.x > canvas.width + polygon.radius) polygon.x = -polygon.radius;
+        if (polygon.y < -polygon.radius) polygon.y = canvas.height + polygon.radius;
+        if (polygon.y > canvas.height + polygon.radius) polygon.y = -polygon.radius;
+  
+        drawPolygon(polygon);
+      });
+  
+      requestAnimationFrame(animate);
+    }
+  
+    initPolygons();
+    animate();
   </script>
 
 </body>
