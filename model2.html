@@ -123,12 +123,6 @@
       display: none;
     }
 
-    #loading {
-      display: none;
-      color: #666;
-      font-size: 0.95em;
-      margin-top: 1em;
-    }
   </style>
 </head>
 <body>
@@ -170,8 +164,6 @@
 
     <p>ARがスタートしないときは</p>
     <div class="btn" id="modelButton" role="button" tabindex="0">モデル表示</div>
-
-    <div id="loading">読み込み中...</div>
 
     <model-viewer
       id="viewer"
@@ -222,7 +214,6 @@
       const viewer = document.getElementById("viewer");
       const arButton = document.getElementById("arButton");
       const modelButton = document.getElementById("modelButton");
-      const loading = document.getElementById("loading");
 
       const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
 
@@ -245,7 +236,6 @@
           viewer.alt = name;
 
           viewer.addEventListener("load", () => {
-            loading.style.display = "none";
             viewer.style.display = "block";
             arButton.disabled = !viewer.canActivateAR;
           }, { once: true });
@@ -264,7 +254,6 @@
         });
 
         modelButton.addEventListener("click", () => {
-          loading.style.display = "block";
           viewer.style.display = "block";
         });
 
