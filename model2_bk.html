@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Model Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+  <style>
+    html{
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #fefefe;
+      color: #444;
+      text-align: center;
+      overflow-x: hidden;
+    }
+
+    .header, .footer {
+      padding: 1em 1em;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      color: #333;
+      margin: 0;
+    }
+
+    h2 {
+      font-size: 1.2em;
+      margin-top: 1em;
+      color: #555;
+      font-weight: normal;
+    }
+
+    .note {
+      border: 2px solid #ccc;
+      padding: 0.5em;
+      background-color: #f9f9f9;
+      margin: 1em;
+      font-size: 0.8em;
+    }
+
+    .section {
+      padding: 0.01rem 1rem;
+      font-family: "Helvetica Neue", sans-serif;
+      background-color: rgba(255,255,255,0.3);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      text-align: left;
+    }
+
+    .step {
+      background-color: rgba(255,255,255,0.3);
+      border-left: 6px solid #4a90e2;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+    }
+
+    .step:hover {
+      background-color: #f0f8ff;
+    }
+
+    .step h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #333;
+    }
+
+    .step ul {
+      padding-left: 1.2rem;
+      margin: 0.01rem 0;
+    }
+
+    .step li {
+      color: #555;
+      line-height: 1.6;
+      list-style-type: disc;
+    }
+
+    .btn, .btn_next {
+      display: inline-block;
+      padding: 0.8em 1.2em;
+      background: #cce3f6;
+      color: #222;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      border: none;
+      transition: background 0.3s ease, transform 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn:hover, .btn_next:hover {
+      background: #a6c9e2;
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      background: #eee;
+      color: #aaa;
+      cursor: not-allowed;
+    }
+
+    .controls {
+      margin-top: 1em;
+      margin-bottom: 1em;
+    }
+
+    select {
+      font-size: 1em;
+      padding: 0.5em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      color: #333;
+      margin-top: 0.3em;
+    }
+
+    .ok-text {
+      margin-top: 1.2em;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .footer {
+      font-size: 0.8em;
+      color: #888;
+    }
+
+    .footer a {
+      color: #9999cc;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+
+    .footer a:hover {
+      color: #6666aa;
+      text-decoration: underline;
+    }
+
+    model-viewer {
+      width: 95%;
+      height: 80vh;
+      margin: 0.8em auto 0 auto;
+      display: block;
+    }
+
+    model-viewer::part(default-ar-button) {
+      display: none;
+    }
+
+    #bgCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      display: block;
+    }
+
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <div class="header">
+    <h1>AR Viewer</h1>
+  </div>
+
+  <div class="section" id="howto">
+    <div class="step">
+      <h2>Step 1: ARスタートを押す</h2>
+      <ul>
+        <li>「ARスタート」を押して、スマホをまっすぐ前に向ける</li>
+        <li>カメラへのアクセスが求められたら「許可」を選ぶ</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <h2>Step 2: 平らな場所を映す</h2>
+      <ul>
+        <li>カメラで床やテーブルなどの平らな場所をゆっくり映す</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <h2>Step 3: モデルを自由に動かす</h2>
+      <ul>
+        <li>指で回転・拡大・移動ができます</li>
+        <li>シャッターボタンで写真も撮れます</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note">
+    安全な場所で使用してください。
+  </div>
+
+  <div class="controls">
+    <label for="modelSelect">
+      表示モデル:
+    </label>
+    <select id="modelSelect">
+      <option>読み込み中...</option>
+    </select>
+  </div>
+
+  <div id="btn_next" class="btn_next" role="button" tabindex="0" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
+
+  <div id="ar-controls" style="display:none;">
+    <div class="btn" id="arButton" role="button" tabindex="0" disabled>ARスタート</div>
+
+    <h5>※ARがスタートしないときは[モデル表示]でお楽しみください</h5>
+    <div class="btn" id="modelButton" role="button" tabindex="0">モデル表示</div>
+
+    <model-viewer
+      id="viewer"
+      style="display: none;"
+      ar
+      ar-modes="scene-viewer webxr quick-look"
+      src=""
+      alt="3D Model Viewer"
+      camera-controls
+      autoplay
+    ></model-viewer>
+
+    <p class="ok-text">こう表示できるとOK</p>
+
+  </div>
+
+  <div class="note">
+    iOSではSafari、AndroidではChromeをご使用ください。ARに対応していない機種では再生できない場合があります。
+  </div>
+
+  <div class="footer">
+    使用ライブラリ: <a href="https://modelviewer.dev/" target="_blank" rel="noopener">model-viewer</a>
+  </div>
+
+  <script>
+    async function loadCSV(url) {
+      const response = await fetch(url);
+      const text = await response.text();
+      return parseCSV(text);
+    }
+
+    function parseCSV(csvData) {
+      const lines = csvData.trim().split('\n');
+      const headers = lines[0].split(',');
+      const result = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const obj = {};
+        const currentline = lines[i].split(',');
+        for (let j = 0; j < headers.length; j++) {
+          obj[headers[j].trim()] = currentline[j]?.trim();
+        }
+        result.push(obj);
+      }
+      return result;
+    }
+
+    function showAR() {
+      document.getElementById("ar-controls").style.display = "block";
+      document.getElementById("btn_next").style.display = "none";
+    }
+
+    async function initialize() {
+      const modelSelect = document.getElementById("modelSelect");
+      const viewer = document.getElementById("viewer");
+      const arButton = document.getElementById("arButton");
+      const modelButton = document.getElementById("modelButton");
+
+      const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
+
+      try {
+        const records = await loadCSV(csvUrl);
+        modelSelect.innerHTML = "";
+
+        records.forEach((item) => {
+          if (!item.path || !item.name) return;
+          const option = document.createElement("option");
+          option.value = item.path;
+          option.textContent = item.name;
+          option.dataset.name = item.name;
+          modelSelect.appendChild(option);
+        });
+
+        async function loadModel(path, name) {
+          viewer.style.display = "none";
+          viewer.src = path;
+          viewer.alt = name;
+
+          viewer.addEventListener("load", () => {
+            viewer.style.display = "block";
+            arButton.disabled = !viewer.canActivateAR;
+          }, { once: true });
+        }
+
+        modelSelect.addEventListener("change", async (e) => {
+          const path = e.target.value;
+          const name = e.target.selectedOptions[0].dataset.name;
+          if (path) {
+            await loadModel(path, name);
+          }
+        });
+
+        arButton.addEventListener("click", () => {
+          viewer.activateAR();
+          viewer.style.display = "none";
+        });
+
+        modelButton.addEventListener("click", () => {
+          viewer.style.display = "block";
+        });
+
+        if (records.length > 0) {
+          await loadModel(records[0].path, records[0].name);
+        }
+
+      } catch (error) {
+        alert("モデルの読み込みに失敗しました。インターネット接続をご確認ください。");
+        console.error("CSV読み込みエラー:", error);
+      }
+    }
+
+    initialize();
+
+    // 背景描写
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let polygons = [];
+
+    let lastOrientation = screen.orientation?.angle || window.orientation;
+
+    function resizeCanvasIfRotated() {
+      const currentOrientation = screen.orientation?.angle || window.orientation;
+      if (currentOrientation !== lastOrientation) {
+        lastOrientation = currentOrientation;
+        resizeCanvas();
+      }
+    }
+
+    function resizeCanvas() {
+      canvas.width = window.visualViewport.width;
+      canvas.height = window.visualViewport.height;
+    }
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvasIfRotated);
+
+    function createPolygon(x, y, radius, sides, speedX, speedY, rotation, timeOffset) {
+      return { x, y, radius, sides, speedX, speedY, rotation , timeOffset};
+    }
+
+    function initPolygons(count = 30) {
+      polygons = [];
+      for (let i = 0; i < count; i++) {
+        const radius = 20 + Math.random() * 80;
+        const sides = [1, 2][Math.floor(Math.random() * 2)];
+        const speedX = (Math.random() - 0.5) * 0.2;
+        const speedY = (Math.random() - 0.5) * 0.2;
+        const rotation = Math.random() * Math.PI * 2;
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const timeOffset = Math.random() * 5000;
+        polygons.push(createPolygon(x, y, radius, sides, speedX, speedY, rotation, timeOffset));
+      }
+    }
+
+    function drawPolygon(polygon, time) {
+      const { x, y, radius, sides, rotation, timeOffset } = polygon;
+
+      ctx.beginPath();
+      let points = [];
+
+      for (let i = 0; i <= sides; i++) {
+        const angle = (Math.PI * 2 / sides) * i + rotation + Math.sin((time + timeOffset) / 5000 + i) * 1;
+        const px = x + Math.cos(angle) * radius;
+        const py = y + Math.sin(angle) * radius;
+        points.push([px, py]);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+
+      ctx.closePath();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = "#fff";
+      points.forEach(([px, py]) => {
+        ctx.beginPath();
+        ctx.arc(px, py, 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function animate(time) {
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      grad.addColorStop(0, "#e8f0ff");
+      grad.addColorStop(1, "#f2e9ff");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      polygons.forEach(polygon => {
+        polygon.x += polygon.speedX;
+        polygon.y += polygon.speedY;
+        polygon.rotation += 0.001;
+
+        if (polygon.x < -polygon.radius) polygon.x = canvas.width + polygon.radius;
+        if (polygon.x > canvas.width + polygon.radius) polygon.x = -polygon.radius;
+        if (polygon.y < -polygon.radius) polygon.y = canvas.height + polygon.radius;
+        if (polygon.y > canvas.height + polygon.radius) polygon.y = -polygon.radius;
+
+        drawPolygon(polygon, time);
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    initPolygons();
+    animate(0);
+  </script>
+
+</body>
+</html>
