@@ -460,7 +460,7 @@
         scene.remove(txts[0]);
 
         const newTxt = createModelText(`${scalePercent}%`, 0.1);
-        newTxt.position.copy(currentModel.position).add(new THREE.Vector3(0, 0.2, 0));
+        newTxt.position.set(0, offy, -0.5);
         scene.add(newTxt);
         txts[0] = newTxt;
 
