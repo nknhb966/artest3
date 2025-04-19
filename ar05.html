@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -272,36 +271,35 @@
       //   return;
       // }
 
-if (selectedCtrls.length === 1) {
-  const currentPos = selectedCtrls[0].position;
-  if (!isRotating) {
-    lastCtrlPos = currentPos.clone();
-    isRotating = true;
-    isScaling = false;
-    initialDistance = null;
-    lastCenterPos = null;
-  } else {
-    const delta = currentPos.clone().sub(lastCtrlPos);
+      if (selectedCtrls.length === 1) {
+        const currentPos = selectedCtrls[0].position;
+        if (!isRotating) {
+          lastCtrlPos = currentPos.clone();
+          isRotating = true;
+          isScaling = false;
+          initialDistance = null;
+          lastCenterPos = null;
+        } else {
+          const delta = currentPos.clone().sub(lastCtrlPos);
 
-    // 回転量スケーリング
-    const speed = 1.5;
+          // 回転量スケーリング
+          const speed = 5;
 
-    // ワールド軸ベースの回転をクォータニオンで生成
-    const eulerX = new THREE.Euler(delta.y * -speed, 0, 0, 'XYZ');
-    const eulerY = new THREE.Euler(0, delta.x * speed, 0, 'XYZ');
+          // ワールド軸ベースの回転をクォータニオンで生成
+          const eulerX = new THREE.Euler(delta.y * -speed, 0, 0, 'XYZ');
+          const eulerY = new THREE.Euler(0, delta.x * speed, 0, 'XYZ');
 
-    const qx = new THREE.Quaternion().setFromEuler(eulerX);
-    const qy = new THREE.Quaternion().setFromEuler(eulerY);
+          const qx = new THREE.Quaternion().setFromEuler(eulerX);
+          const qy = new THREE.Quaternion().setFromEuler(eulerY);
 
-    // y軸の回転を先に適用（yaw→pitchの順）
-    targetQuaternion.premultiply(qy);
-    targetQuaternion.premultiply(qx);
+          // y軸の回転を先に適用（yaw→pitchの順）
+          targetQuaternion.premultiply(qy);
+          targetQuaternion.premultiply(qx);
 
-    lastCtrlPos.copy(currentPos);
-  }
-  return;
-}
-
+          lastCtrlPos.copy(currentPos);
+        }
+        return;
+      }
 
       isScaling = false;
       isRotating = false;
@@ -453,9 +451,9 @@ if (selectedCtrls.length === 1) {
       currentModel.position.lerp(targetPosition, easing);
       currentModel.scale.lerp(targetScale, easing);
       currentModel.quaternion.slerp(targetQuaternion, easing);
-      // currentModel.rotation.x += (targetRotation.x - currentModel.rotation.x) * easing;
-      // currentModel.rotation.y += (targetRotation.y - currentModel.rotation.y) * easing;
-      // currentModel.rotation.z += (targetRotation.z - currentModel.rotation.z) * easing;
+      currentModel.rotation.x += (targetRotation.x - currentModel.rotation.x) * easing;
+      currentModel.rotation.y += (targetRotation.y - currentModel.rotation.y) * easing;
+      currentModel.rotation.z += (targetRotation.z - currentModel.rotation.z) * easing;
 
       const scalePercent = Math.round(currentModel.scale.x * 100);
       if (txts[0] && scalePercent !== lastScalePercent) {
