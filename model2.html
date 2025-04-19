@@ -104,12 +104,6 @@
       transform: translateY(-1px);
     }
 
-/*    .btn:disabled {
-      background: #eee;
-      color: #aaa;
-      cursor: not-allowed;
-    }
-*/
     .controls {
       margin-top: 1em;
       margin-bottom: 1em;
@@ -284,13 +278,6 @@
         async function loadModel(path, name) {
           viewer.src = path;
           viewer.alt = name;
-
-          // viewer.addEventListener("load", () => {
-          //   viewer.style.display = "block";
-          //   // arButton.disabled = !viewer.canActivateAR;
-          // }
-          // // , { once: true }
-          // );
         }
 
         modelSelect.addEventListener("change", async (e) => {
@@ -305,13 +292,6 @@
           viewer.activateAR();
           viewer.style.display = "none";
         });
-
-// arButton.addEventListener("click", () => {
-//   viewer.activateAR();
-//   setTimeout(() => {
-//     viewer.style.setProperty("display", "none", "important");
-//   }, 100); // 100msくらい様子を見てから非表示に
-// });
 
         modelButton.addEventListener("click", () => {
           viewer.style.display = "block";
