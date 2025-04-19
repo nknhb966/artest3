@@ -86,7 +86,7 @@
       list-style-type: disc;
     }
 
-    .btn, .btn_next {
+    .btn {
       display: inline-block;
       padding: 0.8em 1.2em;
       background: #cce3f6;
@@ -99,7 +99,7 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .btn:hover, .btn_next:hover {
+    .btn:hover {
       background: #a6c9e2;
       transform: translateY(-1px);
     }
@@ -168,7 +168,7 @@
 <body>
   <canvas id="bgCanvas"></canvas>
   <div class="header">
-    <h1>AR Viewer.</h1>
+    <h1>AR Viewer</h1>
   </div>
 
   <div class="section" id="howto">
@@ -211,7 +211,7 @@
   </div>
 
   <div id="ar-controls">
-    <div class="btn" id="arButton" role="button">ARスタート</div>
+    <div class="btn" id="arButton">ARスタート</div>
 
     <h5>※ARがスタートしないときは[モデル表示]をお楽しみください</h5>
     <div class="btn" id="modelButton" role="button">モデル表示</div>
@@ -285,12 +285,12 @@
           viewer.src = path;
           viewer.alt = name;
 
-          viewer.addEventListener("load", () => {
-            viewer.style.display = "block";
-            // arButton.disabled = !viewer.canActivateAR;
-          }
-          // , { once: true }
-          );
+          // viewer.addEventListener("load", () => {
+          //   viewer.style.display = "block";
+          //   // arButton.disabled = !viewer.canActivateAR;
+          // }
+          // // , { once: true }
+          // );
         }
 
         modelSelect.addEventListener("change", async (e) => {
