@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -44,27 +45,54 @@
       font-weight: normal;
     }
 
+    .note {
+      border: 2px solid #ccc;
+      padding: 0.5em;
+      background-color: #f9f9f9;
+      margin: 1em;
+      font-size: 0.8em;
+    }
+
     .section {
-      background: rgba(255,255,255,0.5);
-      margin: auto;
-      padding: 1em;
-      max-width: 640px;
-      border: 1px solid #ddd;
+      max-width: 600px;
+      padding: 0.01rem 1rem;
+      font-family: "Helvetica Neue", sans-serif;
+      background-color: rgba(255,255,255,0.3);
       border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       text-align: left;
     }
 
     .step {
-      margin-bottom: 1em;
+      background-color: rgba(255,255,255,0.3);
+      border-left: 6px solid #4a90e2;
+      padding: 1rem;
+      margin-top: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
     }
 
-    .note {
-      border: 2px solid #ccc;
-      padding: 1em;
-      background-color: #f9f9f9;
-      margin: 1em 0;
-      font-size: 0.95em;
+    .step:hover {
+      background-color: #f0f8ff;
+    }
+
+    .step h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: #333;
+    }
+
+    .step ul {
+      padding-left: 1.2rem;
+      margin: 0.5rem 0;
+    }
+
+    .step li {
+      margin-bottom: 0.5rem;
+      color: #555;
+      line-height: 1.6;
+      list-style-type: disc;
     }
 
     .btn, .btn_next {
@@ -160,22 +188,31 @@
 
   <div class="section" id="howto">
     <div class="step">
-      <h2>Step 1: スマホをまっすぐ持とう</h2>
-      <p>「ARスタート」を押して、スマホをまっすぐ前に向けてください。</p>
-      <p>（カメラへのアクセスが求められたら「許可」してください）</p>
+      <h2>Step 1: ARスタートを押す</h2>
+      <ul>
+        <li>「ARスタート」を押して、スマホをまっすぐ前に向ける</li>
+        <li>カメラへのアクセスが求められたら「許可」を選ぶ</li>
+      </ul>
     </div>
+
     <div class="step">
-      <h2>Step 2: 周囲の空間を映そう</h2>
-      <p>カメラで床やテーブルなどの平らな場所をゆっくり映しましょう</p>
+      <h2>Step 2: 平らな場所を映す</h2>
+      <ul>
+        <li>カメラで床やテーブルなどの平らな場所をゆっくり映す</li>
+      </ul>
     </div>
+
     <div class="step">
-      <h2>Step 3: モデルを自由に動かそう</h2>
-      <p>指で回転・拡大・移動ができます</p>
-      <p>シャッターボタンで写真も撮れます</p>
+      <h2>Step 3: モデルを自由に動かす</h2>
+      <ul>
+        <li>指で回転・拡大・移動ができます</li>
+        <li>シャッターボタンで写真も撮れます</li>
+      </ul>
     </div>
-    <div class="note">
-      安全な場所で使用してください。iOSではSafari、AndroidではChromeをご使用ください。ARに対応していない機種では再生できない場合があります。
-    </div>
+  </div>
+
+  <div class="note">
+    安全な場所で使用してください。
   </div>
 
   <div class="controls">
@@ -208,6 +245,10 @@
 
     <p class="ok-text">こう表示できるとOK</p>
 
+  </div>
+
+  <div class="note">
+    iOSではSafari、AndroidではChromeをご使用ください。ARに対応していない機種では再生できない場合があります。
   </div>
 
   <div class="footer">
