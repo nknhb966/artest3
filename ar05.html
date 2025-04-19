@@ -273,7 +273,7 @@ async function loadModel(path, name) {
         lastDirection = null;
       } else {
         const delta = currentPos.clone().sub(lastCtrlPos);
-        const speed = 1.5;
+        const speed = 8.0;
         const eulerX = new THREE.Euler(delta.y * -speed, 0, 0, 'XYZ');
         const eulerY = new THREE.Euler(0, delta.x * speed, 0, 'XYZ');
         const qx = new THREE.Quaternion().setFromEuler(eulerX);
