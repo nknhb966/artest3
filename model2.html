@@ -125,12 +125,6 @@
       margin-top: 0.3em;
     }
 
-    .ok-text {
-      margin-top: 1.2em;
-      font-weight: bold;
-      color: #444;
-    }
-
     .footer {
       font-size: 0.8em;
       color: #888;
@@ -182,28 +176,29 @@
       <h2>Step 1: ARスタートを押す</h2>
       <ul>
         <li>「ARスタート」を押して、スマホをまっすぐ前に向ける</li>
-        <li>カメラへのアクセスが求められたら「許可」を選ぶ</li>
+        <li>「この3Dモデルを開きますか？」で「許可」を選ぶ</li>
       </ul>
     </div>
 
     <div class="step">
       <h2>Step 2: 平らな場所を映す</h2>
       <ul>
-        <li>カメラで床やテーブルなどの平らな場所をゆっくり映す</li>
+        <li>カメラでテーブルや床などの平らな場所をゆっくり映す</li>
+        <p><b>→ 3Dモデルが表示されます</b></p>
       </ul>
     </div>
 
     <div class="step">
       <h2>Step 3: モデルを自由に動かす</h2>
       <ul>
-        <li>指で回転・拡大・移動ができます</li>
+        <li>指で3Dモデルの回転・拡大・移動ができます</li>
         <li>シャッターボタンで写真も撮れます</li>
       </ul>
     </div>
   </div>
 
   <div class="note">
-    安全な場所で使用してください。
+    安全な場所で周囲に注意して使用してください
   </div>
 
   <div class="controls">
@@ -215,12 +210,10 @@
     </select>
   </div>
 
-  <div id="btn_next" class="btn_next" role="button" tabindex="0" onclick="showAR()">使い方を確認したので<br>AR表示に進む</div>
-
-  <div id="ar-controls" style="display:none;">
+  <div id="ar-controls">
     <div class="btn" id="arButton" role="button" tabindex="0" disabled>ARスタート</div>
 
-    <h5>※ARがスタートしないときは[モデル表示]でお楽しみください</h5>
+    <h5>※ARがスタートしないときは次の[モデル表示]でお楽しみください</h5>
     <div class="btn" id="modelButton" role="button" tabindex="0">モデル表示</div>
 
     <model-viewer
@@ -233,8 +226,6 @@
       camera-controls
       autoplay
     ></model-viewer>
-
-    <p class="ok-text">こう表示できるとOK</p>
 
   </div>
 
@@ -269,11 +260,6 @@
       return result;
     }
 
-    function showAR() {
-      document.getElementById("ar-controls").style.display = "block";
-      document.getElementById("btn_next").style.display = "none";
-    }
-
     async function initialize() {
       const modelSelect = document.getElementById("modelSelect");
       const viewer = document.getElementById("viewer");
@@ -296,7 +282,6 @@
         });
 
         async function loadModel(path, name) {
-          viewer.style.display = "none";
           viewer.src = path;
           viewer.alt = name;
 
@@ -316,7 +301,7 @@
 
         arButton.addEventListener("click", () => {
           viewer.activateAR();
-          viewer.style.display = "none";
+          viewer.style.setProperty("display", "none", "important");
         });
 
         modelButton.addEventListener("click", () => {
