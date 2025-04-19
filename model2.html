@@ -86,7 +86,7 @@
       list-style-type: disc;
     }
 
-    .btn {
+    .btn, .btn_next {
       display: inline-block;
       padding: 0.8em 1.2em;
       background: #cce3f6;
@@ -99,7 +99,7 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .btn:hover {
+    .btn:hover, .btn_next:hover {
       background: #a6c9e2;
       transform: translateY(-1px);
     }
@@ -191,7 +191,7 @@
     <div class="step">
       <h2>Step 3: モデルを自由に動かす</h2>
       <ul>
-        <li>指で3Dモデルの回転・拡大・移動ができます</li>
+        <li>指で回転・拡大・移動ができます</li>
         <li>シャッターボタンで写真も撮れます</li>
       </ul>
     </div>
@@ -299,12 +299,17 @@
           }
         });
 
-        arButton.addEventListener("click", () => {
-          viewer.activateAR();
-          setTimeout(() => {
-            viewer.style.setProperty("display", "none", "important");
-          }, 100);
-        });
+        // arButton.addEventListener("click", () => {
+        //   viewer.activateAR();
+        //   viewer.style.display = "none";
+        // });
+
+arButton.addEventListener("click", () => {
+  viewer.activateAR();
+  setTimeout(() => {
+    viewer.style.setProperty("display", "none", "important");
+  }, 100); // 100msくらい様子を見てから非表示に
+});
 
         modelButton.addEventListener("click", () => {
           viewer.style.display = "block";
