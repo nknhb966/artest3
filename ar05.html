@@ -13,7 +13,7 @@
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
-    <label for="modelSelect">モデルを選択.：</label>
+    <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
   </header>
 
@@ -196,8 +196,8 @@
 
   let isLoadingModel = false;
 
-  const _center = new THREE.Vector3();
-  const _delta = new THREE.Vector3();
+  // const _center = new THREE.Vector3();
+  // const _delta = new THREE.Vector3();
 
   // モデルをロードして表示
   async function loadModel(path, name) {
@@ -234,8 +234,8 @@
       const selectedCtrls = ctrls.filter(c => c.selected);
       if (selectedCtrls.length === 2) {
         const [p1, p2] = [selectedCtrls[0].position, selectedCtrls[1].position];
-        // const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-        _center.addVectors(p1, p2).multiplyScalar(0.5);
+        const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+        // _center.addVectors(p1, p2).multiplyScalar(0.5);
         const dist = p1.distanceTo(p2);
 
         if (!isScaling) {
@@ -249,8 +249,8 @@
           const newScale = initialScale * scaleFactor;
           targetScale.set(newScale, newScale, newScale);
 
-          // const delta = center.clone().sub(lastCenterPos);
-          _delta.copy(center).sub(lastCenterPos);
+          const delta = center.clone().sub(lastCenterPos);
+          // _delta.copy(center).sub(lastCenterPos);
           targetPosition.add(delta);
           lastCenterPos.copy(center);
         }
