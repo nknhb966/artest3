@@ -152,149 +152,149 @@
 
   loadMenuFromCSV();
 
-// 状態用
-let mesh = null;
-let txts = [];
-let isScaling = false;
-let isRotating = false;
-let initialDistance = null;
-let initialScale = 1;
-let lastCenterPos = null;
-let lastCtrlPos = null;
-let lastDirection = null;
+  // 状態用
+  let mesh = null;
+  let txts = [];
+  let isScaling = false;
+  let isRotating = false;
+  let initialDistance = null;
+  let initialScale = 1;
+  let lastCenterPos = null;
+  let lastCtrlPos = null;
+  let lastDirection = null;
 
-// イージング
-const easing = 0.1;
-let targetPosition = new THREE.Vector3();
-let targetScale = new THREE.Vector3(1, 1, 1);
-let targetQuaternion = new THREE.Quaternion();
+  // イージング
+  const easing = 0.1;
+  let targetPosition = new THREE.Vector3();
+  let targetScale = new THREE.Vector3(1, 1, 1);
+  let targetQuaternion = new THREE.Quaternion();
 
-const offy = isVisionPro() ? 0.6 : 0;
+  const offy = isVisionPro() ? 0.6 : 0;
 
-// マテリアルの破棄
-function disposeMaterial(material) {
-  if (Array.isArray(material)) {
-    material.forEach(m => {
-      if (m.map) m.map.dispose();
-      m.dispose();
+  // マテリアルの破棄
+  function disposeMaterial(material) {
+    if (Array.isArray(material)) {
+      material.forEach(m => {
+        if (m.map) m.map.dispose();
+        m.dispose();
+      });
+    } else {
+      if (material.map) material.map.dispose();
+      material.dispose();
+    }
+  }
+
+  function disposeModel(model) {
+    model.traverse(child => {
+      if (child.isMesh) {
+        child.geometry?.dispose();
+        disposeMaterial(child.material);
+      }
     });
-  } else {
-    if (material.map) material.map.dispose();
-    material.dispose();
+    scene.remove(model);
   }
-}
 
-function disposeModel(model) {
-  model.traverse(child => {
-    if (child.isMesh) {
-      child.geometry?.dispose();
-      disposeMaterial(child.material);
+  let isLoadingModel = false;
+
+  // モデルをロードして表示
+  async function loadModel(path, name) {
+    if (isLoadingModel) return;
+    isLoadingModel = true;
+
+    if (currentModel) {
+      disposeModel(currentModel);
+      txts.forEach(t => scene.remove(t));
+      txts = [];
+      currentModel = null;
     }
-  });
-  scene.remove(model);
-}
 
-let isLoadingModel = false;
+    const model = await waitLoadGLTF(path);
+    model.userData.path = path;
+    model.position.set(0, offy - 0.2, -0.5);
+    model.scale.set(1, 1, 1);
+    scene.add(model);
+    currentModel = model;
 
-// モデルをロードして表示
-async function loadModel(path, name) {
-  if (isLoadingModel) return;
-  isLoadingModel = true;
+    let txt1 = createModelText("100%", 0.1);
+    let txt2 = createModelText(name, 0.2);
+    txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
+    txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
+    scene.add(txt1);
+    scene.add(txt2);
+    txts = [txt1, txt2];
 
-  if (currentModel) {
-    disposeModel(currentModel);
-    txts.forEach(t => scene.remove(t));
-    txts = [];
-    currentModel = null;
-  }
+    targetPosition.copy(model.position);
+    targetScale.set(1, 1, 1);
+    targetQuaternion.copy(model.quaternion);
 
-  const model = await waitLoadGLTF(path);
-  model.userData.path = path;
-  model.position.set(0, offy - 0.2, -0.5);
-  model.scale.set(1, 1, 1);
-  scene.add(model);
-  currentModel = model;
+    model.animate = () => {
+      const selectedCtrls = ctrls.filter(c => c.selected);
 
-  let txt1 = createModelText("100%", 0.1);
-  let txt2 = createModelText(name, 0.2);
-  txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
-  txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
-  scene.add(txt1);
-  scene.add(txt2);
-  txts = [txt1, txt2];
+      if (selectedCtrls.length === 2) {
+        const [p1, p2] = [selectedCtrls[0].position, selectedCtrls[1].position];
+        const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+        const dist = p1.distanceTo(p2);
+        const direction = new THREE.Vector2(p2.x - p1.x, p2.y - p1.y).normalize();
 
-  targetPosition.copy(model.position);
-  targetScale.set(1, 1, 1);
-  targetQuaternion.copy(model.quaternion);
+        if (!isScaling) {
+          initialDistance = dist;
+          initialScale = model.scale.x;
+          lastCenterPos = center.clone();
+          lastDirection = direction.clone();
+          isScaling = true;
+          isRotating = false;
+        } else {
+          const scaleFactor = dist / initialDistance;
+          const newScale = initialScale * scaleFactor;
+          targetScale.set(newScale, newScale, newScale);
 
-  model.animate = () => {
-    const selectedCtrls = ctrls.filter(c => c.selected);
+          const delta = center.clone().sub(lastCenterPos);
+          targetPosition.add(delta);
+          lastCenterPos.copy(center);
 
-    if (selectedCtrls.length === 2) {
-      const [p1, p2] = [selectedCtrls[0].position, selectedCtrls[1].position];
-      const center = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-      const dist = p1.distanceTo(p2);
-      const direction = new THREE.Vector2(p2.x - p1.x, p2.y - p1.y).normalize();
+          const angle = Math.atan2(direction.y, direction.x) - Math.atan2(lastDirection.y, lastDirection.x);
+          const qz = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), angle);
+          targetQuaternion.premultiply(qz);
+          lastDirection.copy(direction);
+        }
 
-      if (!isScaling) {
-        initialDistance = dist;
-        initialScale = model.scale.x;
-        lastCenterPos = center.clone();
-        lastDirection = direction.clone();
-        isScaling = true;
-        isRotating = false;
-      } else {
-        const scaleFactor = dist / initialDistance;
-        const newScale = initialScale * scaleFactor;
-        targetScale.set(newScale, newScale, newScale);
-
-        const delta = center.clone().sub(lastCenterPos);
-        targetPosition.add(delta);
-        lastCenterPos.copy(center);
-
-        const angle = Math.atan2(direction.y, direction.x) - Math.atan2(lastDirection.y, lastDirection.x);
-        const qz = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), angle);
-        targetQuaternion.premultiply(qz);
-        lastDirection.copy(direction);
+        lastCtrlPos = null;
+        return;
       }
 
+      if (selectedCtrls.length === 1) {
+        const currentPos = selectedCtrls[0].position;
+        if (!isRotating) {
+          lastCtrlPos = currentPos.clone();
+          isRotating = true;
+          isScaling = false;
+          initialDistance = null;
+          lastCenterPos = null;
+          lastDirection = null;
+        } else {
+          const delta = currentPos.clone().sub(lastCtrlPos);
+          const speed = 8.0;
+          const eulerX = new THREE.Euler(delta.y * -speed, 0, 0, 'XYZ');
+          const eulerY = new THREE.Euler(0, delta.x * speed, 0, 'XYZ');
+          const qx = new THREE.Quaternion().setFromEuler(eulerX);
+          const qy = new THREE.Quaternion().setFromEuler(eulerY);
+          targetQuaternion.premultiply(qy).premultiply(qx);
+          lastCtrlPos.copy(currentPos);
+        }
+        return;
+      }
+
+      // リセット
+      isScaling = false;
+      isRotating = false;
+      initialDistance = null;
+      lastCenterPos = null;
       lastCtrlPos = null;
-      return;
-    }
+      lastDirection = null;
+    };
 
-    if (selectedCtrls.length === 1) {
-      const currentPos = selectedCtrls[0].position;
-      if (!isRotating) {
-        lastCtrlPos = currentPos.clone();
-        isRotating = true;
-        isScaling = false;
-        initialDistance = null;
-        lastCenterPos = null;
-        lastDirection = null;
-      } else {
-        const delta = currentPos.clone().sub(lastCtrlPos);
-        const speed = 8.0;
-        const eulerX = new THREE.Euler(delta.y * -speed, 0, 0, 'XYZ');
-        const eulerY = new THREE.Euler(0, delta.x * speed, 0, 'XYZ');
-        const qx = new THREE.Quaternion().setFromEuler(eulerX);
-        const qy = new THREE.Quaternion().setFromEuler(eulerY);
-        targetQuaternion.premultiply(qy).premultiply(qx);
-        lastCtrlPos.copy(currentPos);
-      }
-      return;
-    }
-
-    // リセット
-    isScaling = false;
-    isRotating = false;
-    initialDistance = null;
-    lastCenterPos = null;
-    lastCtrlPos = null;
-    lastDirection = null;
-  };
-
-  isLoadingModel = false;
-}
+    isLoadingModel = false;
+  }
 
   // === スマホ・PC用 ===
   const raycaster = new THREE.Raycaster();
@@ -319,6 +319,7 @@ async function loadModel(path, name) {
   let lastMousePos = null;
   let initialTouchDist = 0;
   let lastTouchCenter = null;
+  let lastTouchAngle = null;
 
   renderer.domElement.addEventListener("mousedown", (e) => {
     if (e.button === 0) {
@@ -343,8 +344,11 @@ async function loadModel(path, name) {
     const moveFactor = 1.0;
 
     if (isLeftDragging) {
-      targetRotation.y += normDX * rotateFactor;
-      targetRotation.x += normDY * rotateFactor;
+      const eulerX = new THREE.Euler(normDY * rotateFactor, 0, 0, 'XYZ');
+      const eulerY = new THREE.Euler(0, normDX * rotateFactor, 0, 'XYZ');
+      const qx = new THREE.Quaternion().setFromEuler(eulerX);
+      const qy = new THREE.Quaternion().setFromEuler(eulerY);
+      targetQuaternion.premultiply(qy).premultiply(qx);
     } else if (isRightDragging) {
       targetPosition.x += normDX * moveFactor;
       targetPosition.y -= normDY * moveFactor;
@@ -372,16 +376,15 @@ async function loadModel(path, name) {
   renderer.domElement.addEventListener("touchstart", (e) => {
     if (e.touches.length === 2) {
       isUserScaling = true;
-      // スケーリング
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       initialTouchDist = Math.hypot(dx, dy);
       initialScale = currentModel?.scale?.x || 1;
-      // 平行移動
       lastTouchCenter = {
         x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
         y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
       };
+      lastTouchAngle = Math.atan2(dy, dx);
     } else if (e.touches.length === 1) {
       isUserRotating = true;
       prevMouse.x = e.touches[0].clientX;
@@ -392,13 +395,12 @@ async function loadModel(path, name) {
   renderer.domElement.addEventListener("touchmove", (e) => {
     if (e.touches.length === 2 && isUserScaling && currentModel) {
       event.preventDefault();
-      // スケーリング
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const dist = Math.hypot(dx, dy);
       const scaleFactor = dist / initialTouchDist;
       targetScale.setScalar(initialScale * scaleFactor);
-      // 平行移動
+
       const newCenter = {
         x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
         y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
@@ -409,12 +411,21 @@ async function loadModel(path, name) {
       targetPosition.x += deltaX * moveFactor;
       targetPosition.y -= deltaY * moveFactor;
       lastTouchCenter = newCenter;
+
+      const newAngle = -Math.atan2(dy, dx);
+      const angleDiff = newAngle - lastTouchAngle;
+      const qz = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), angleDiff);
+      targetQuaternion.premultiply(qz);
+      lastTouchAngle = newAngle;
     } else if (e.touches.length === 1 && isUserRotating && currentModel) {
       event.preventDefault();
       const dx = e.touches[0].clientX - prevMouse.x;
       const dy = e.touches[0].clientY - prevMouse.y;
-      targetRotation.y += dx * 0.01;
-      targetRotation.x += dy * 0.01;
+      const eulerX = new THREE.Euler(dy * 0.01, 0, 0, 'XYZ');
+      const eulerY = new THREE.Euler(0, dx * 0.01, 0, 'XYZ');
+      const qx = new THREE.Quaternion().setFromEuler(eulerX);
+      const qy = new THREE.Quaternion().setFromEuler(eulerY);
+      targetQuaternion.premultiply(qy).premultiply(qx);
       prevMouse.x = e.touches[0].clientX;
       prevMouse.y = e.touches[0].clientY;
     }
@@ -423,6 +434,7 @@ async function loadModel(path, name) {
   renderer.domElement.addEventListener("touchend", () => {
     isUserScaling = false;
     isUserRotating = false;
+    lastTouchAngle = null;
   });
 
   let lastScalePercent = 100;
@@ -435,9 +447,6 @@ async function loadModel(path, name) {
       currentModel.position.lerp(targetPosition, easing);
       currentModel.scale.lerp(targetScale, easing);
       currentModel.quaternion.slerp(targetQuaternion, easing);
-      // currentModel.rotation.x += (targetRotation.x - currentModel.rotation.x) * easing;
-      // currentModel.rotation.y += (targetRotation.y - currentModel.rotation.y) * easing;
-      // currentModel.rotation.z += (targetRotation.z - currentModel.rotation.z) * easing;
 
       const scalePercent = Math.round(currentModel.scale.x * 100);
       if (txts[0] && scalePercent !== lastScalePercent) {
