@@ -17,6 +17,7 @@
       padding: 0;
       overflow-x: hidden;
     }
+
     body {
       margin: 0;
       font-family: sans-serif;
@@ -177,9 +178,7 @@
   <div id="ar-controls" style="display:none;">
     <div class="btn" id="arButton" role="button" tabindex="0" disabled>ARスタート</div>
 
-    <p class="ok-text">こう表示できるとOK</p>
-
-    <p>ARがスタートしないときは</p>
+    <h5>※ARがスタートしないときは[モデル表示]でお楽しみください</h5>
     <div class="btn" id="modelButton" role="button" tabindex="0">モデル表示</div>
 
     <model-viewer
@@ -192,6 +191,9 @@
       camera-controls
       autoplay
     ></model-viewer>
+
+    <p class="ok-text">こう表示できるとOK</p>
+
   </div>
 
   <div class="footer">
@@ -267,8 +269,8 @@
         });
 
         arButton.addEventListener("click", () => {
-          viewer.style.display = "none";
           viewer.activateAR();
+          viewer.style.display = "none";
         });
 
         modelButton.addEventListener("click", () => {
