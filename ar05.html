@@ -28,6 +28,7 @@
   <script type="module">
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
+  const csvURL = "https://nknhb966.github.io/artest3/models.csv";
 
   // CSVパース関数
   function parseCSV(csvData) {
@@ -87,7 +88,6 @@
   };
 
   // ロード時の制御
-  const csvURL = "https://nknhb966.github.io/artest3/models.csv";
   const loadMenuFromCSV = async () => {
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
