@@ -104,12 +104,12 @@
       transform: translateY(-1px);
     }
 
-    .btn:disabled {
+/*    .btn:disabled {
       background: #eee;
       color: #aaa;
       cursor: not-allowed;
     }
-
+*/
     .controls {
       margin-top: 1em;
       margin-bottom: 1em;
@@ -211,10 +211,10 @@
   </div>
 
   <div id="ar-controls">
-    <div class="btn" id="arButton" role="button" tabindex="0" disabled>ARスタート</div>
+    <div class="btn" id="arButton" role="button">ARスタート</div>
 
     <h5>※ARがスタートしないときは[モデル表示]をお楽しみください</h5>
-    <div class="btn" id="modelButton" role="button" tabindex="0">モデル表示</div>
+    <div class="btn" id="modelButton" role="button">モデル表示</div>
 
     <model-viewer
       id="viewer"
@@ -287,8 +287,10 @@
 
           viewer.addEventListener("load", () => {
             viewer.style.display = "block";
-            arButton.disabled = !viewer.canActivateAR;
-          }, { once: true });
+            // arButton.disabled = !viewer.canActivateAR;
+          }
+          // , { once: true }
+          );
         }
 
         modelSelect.addEventListener("change", async (e) => {
