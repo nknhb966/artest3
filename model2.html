@@ -213,7 +213,7 @@
   <div id="ar-controls">
     <div class="btn" id="arButton" role="button" tabindex="0" disabled>ARスタート</div>
 
-    <h5>※ARがスタートしないときは次の[モデル表示]でお楽しみください</h5>
+    <h5>※ARがスタートしないときは[モデル表示]をお楽しみください</h5>
     <div class="btn" id="modelButton" role="button" tabindex="0">モデル表示</div>
 
     <model-viewer
@@ -299,10 +299,17 @@
           }
         });
 
-        arButton.addEventListener("click", () => {
-          viewer.activateAR();
-          viewer.style.setProperty("display", "none", "important");
-        });
+        // arButton.addEventListener("click", () => {
+        //   viewer.activateAR();
+        //   viewer.style.display = "none";
+        // });
+
+arButton.addEventListener("click", () => {
+  viewer.activateAR();
+  setTimeout(() => {
+    viewer.style.setProperty("display", "none", "important");
+  }, 100); // 100msくらい様子を見てから非表示に
+});
 
         modelButton.addEventListener("click", () => {
           viewer.style.display = "block";
