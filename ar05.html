@@ -452,9 +452,10 @@ if (selectedCtrls.length === 1) {
 
       currentModel.position.lerp(targetPosition, easing);
       currentModel.scale.lerp(targetScale, easing);
-      currentModel.rotation.x += (targetRotation.x - currentModel.rotation.x) * easing;
-      currentModel.rotation.y += (targetRotation.y - currentModel.rotation.y) * easing;
-      currentModel.rotation.z += (targetRotation.z - currentModel.rotation.z) * easing;
+      currentModel.quaternion.slerp(targetQuaternion, easing);
+      // currentModel.rotation.x += (targetRotation.x - currentModel.rotation.x) * easing;
+      // currentModel.rotation.y += (targetRotation.y - currentModel.rotation.y) * easing;
+      // currentModel.rotation.z += (targetRotation.z - currentModel.rotation.z) * easing;
 
       const scalePercent = Math.round(currentModel.scale.x * 100);
       if (txts[0] && scalePercent !== lastScalePercent) {
