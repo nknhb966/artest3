@@ -419,7 +419,7 @@
       currentModel.rotation.z += (targetRotation.z - currentModel.rotation.z) * easing;
 
       const scalePercent = Math.round(currentModel.scale.x * 100);
-      if (txts[0] && scalePercent !== lastScalePercent) {
+      if (txts[0]) {
         scene.remove(txts[0]);
         const newTxt = createModelText(`${scalePercent}%`, 0.1);
         newTxt.position.set(currentModel.position.x, currentModel.position.y + 0.2, currentModel.position.z);
