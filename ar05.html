@@ -30,6 +30,24 @@
   import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
   const csvURL = "https://nknhb966.github.io/artest3/models.csv";
 
+  window.waitLoadGLTF = (path) => {
+    const loader = new GLTFLoader();
+    return new Promise((resolve) => {
+      loader.load(path, (gltf) => {
+        gltf.scene.traverse((child) => {
+          if (child.isMesh && child.material.map) {
+            child.material.map.encoding = THREE.sRGBEncoding;
+          }
+        });
+        gltf.scene.visible = true;
+        resolve(gltf.scene);
+      }, undefined, (err) => {
+        console.error("GLTF load error:", err);
+        resolve(null);
+      });
+    });
+  };
+
   // CSVパース関数
   function parseCSV(csvData) {
     const lines = csvData.split('\n');
