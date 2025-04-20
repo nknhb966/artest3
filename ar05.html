@@ -12,7 +12,7 @@
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
-    <label for="modelSelect">モデルを選択.：</label>
+    <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
   </header>
 
@@ -208,26 +208,12 @@
       currentModel = null;
     }
 
-const model = await waitLoadGLTF(path);
-
-// WebGLが完全に初期化された後に表示
-setTimeout(() => {
-  model.userData.path = path;
-  model.position.set(0, offy - 0.2, -0.5);
-  model.scale.set(1, 1, 1);
-
-  model.traverse((child) => {
-    if (child.isMesh) {
-      child.frustumCulled = false;  // フラスタムカリング無効化
-    }
-  });
-
-  scene.add(model);
-  currentModel = model;
-
-  // 強制的にrenderを実行して初期化
-  renderer.render(scene, camera);
-}, 500);  // 500ms遅延させる
+    const model = await waitLoadGLTF(path);
+    model.userData.path = path;
+    model.position.set(0, offy - 0.2, -0.5);
+    model.scale.set(1, 1, 1);
+    scene.add(model);
+    currentModel = model;
 
     let txt1 = createModelText("100%", 0.1);
     let txt2 = createModelText(name, 0.2);
