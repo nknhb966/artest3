@@ -12,7 +12,7 @@
     LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
     APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
-    <label for="modelSelect">モデルを選択.：</label>
+    <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
   </header>
 
@@ -198,7 +198,7 @@
 
   // モデルをロードして表示
   async function loadModel(path, name) {
-    // if (isLoadingModel) return;
+    if (isLoadingModel) return;
     isLoadingModel = true;
 
     if (currentModel) {
@@ -294,7 +294,7 @@
     };
 
     isLoadingModel = false;
-    renderer.render(scene, camera);
+    render();
   }
 
   // === スマホ・PC用 ===
