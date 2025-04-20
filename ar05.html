@@ -294,7 +294,6 @@
     };
 
     isLoadingModel = false;
-    render();
   }
 
   // === スマホ・PC用 ===
@@ -448,8 +447,8 @@
 
   // メインループ
   renderer.setAnimationLoop(() => {
-    if (currentModel && typeof currentModel.animate === "function") {
-    currentModel.animate();
+    if (currentModel) {
+      currentModel.animate();
 
       currentModel.position.lerp(targetPosition, easing);
       currentModel.scale.lerp(targetScale, easing);
@@ -482,6 +481,28 @@
 
     renderer.render(scene, camera);
   });
+
+
+  function render() {
+    if (currentModel && typeof currentModel.animate === "function") {
+      currentModel.animate();
+      currentModel.position.lerp(targetPosition, easing);
+      currentModel.quaternion.slerp(targetQuaternion, easing);
+      currentModel.scale.lerp(targetScale, easing);
+    }
+    renderer.render(scene, camera);
+  }
+
+  // XRモードかどうかでループ方法を分ける
+  if (navigator.xr) {
+    renderer.setAnimationLoop(render);
+  } else {
+    function animate() {
+      requestAnimationFrame(animate);
+      render();
+    }
+    animate();
+  }
 
   </script>
 </body>
