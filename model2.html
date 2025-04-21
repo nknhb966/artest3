@@ -21,7 +21,7 @@
       overflow-x: hidden;
     }
 
-    .header, .footer {
+    .header {
       padding: 1em 1em;
     }
 
@@ -31,22 +31,15 @@
       margin: 0;
     }
 
-    h2 {
-      font-size: 1.2em;
-      margin-top: 1em;
-      color: #555;
-    }
-
-    .note {
-      border: 2px solid #ccc;
-      padding: 0.5em;
-      background-color: #f9f9f9;
-      margin: 1em;
-      font-size: 0.8em;
+    h5 {
+      color: #333;
+      font-weight: normal;
+      margin: 1.5em 0em 0.5em;
     }
 
     .section {
       padding: 0.01rem 1rem;
+      margin: 0em 0.5em;
       font-family: "Helvetica Neue", sans-serif;
       background-color: rgba(255,255,255,0.3);
       border-radius: 12px;
@@ -85,6 +78,21 @@
       list-style-type: disc;
     }
 
+    .controls {
+      margin-top: 1em;
+      margin-bottom: 1em;
+    }
+
+    select {
+      font-size: 1em;
+      padding: 0.5em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      color: #333;
+      margin-top: 0.3em;
+    }
+
     .btn {
       display: inline-block;
       padding: 0.8em 1.2em;
@@ -103,22 +111,27 @@
       transform: translateY(-1px);
     }
 
-    .controls {
-      margin-top: 1em;
-      margin-bottom: 1em;
+    model-viewer {
+      width: 95%;
+      height: 80vh;
+      margin: 0.8em auto 0 auto;
+      display: block;
     }
 
-    select {
-      font-size: 1em;
+    model-viewer::part(default-ar-button) {
+      display: none;
+    }
+
+    .note {
+      border: 2px solid #ccc;
       padding: 0.5em;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background-color: #fff;
-      color: #333;
-      margin-top: 0.3em;
+      background-color: #f9f9f9;
+      margin: 1.5em 0.5em 0em;
+      font-size: 0.8em;
     }
 
     .footer {
+      padding: 0.5em;
       font-size: 0.8em;
       color: #888;
     }
@@ -132,17 +145,6 @@
     .footer a:hover {
       color: #6666aa;
       text-decoration: underline;
-    }
-
-    model-viewer {
-      width: 95%;
-      height: 80vh;
-      margin: 0.8em auto 0 auto;
-      display: block;
-    }
-
-    model-viewer::part(default-ar-button) {
-      display: none;
     }
 
     #bgCanvas {
