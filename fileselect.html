@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>スマホでも使えるGLTF Beauty</title>
+</head>
+<body>
+  <h2>GLTF/GLB ファイルを選択して開く</h2>
+  <p>ファイルを選ぶと <code>gltfbeauty</code> を開いて、そのままドロップできます。</p>
+
+  <input type="file" id="fileinput" accept=".gltf,.glb" multiple>
+  <br><br>
+  <button id="openbtn">gltfbeauty を開く</button>
+
+  <script>
+    const input = document.getElementById("fileinput");
+    const btn = document.getElementById("openbtn");
+
+    let filesToDrop = null;
+
+    input.addEventListener("change", () => {
+      filesToDrop = input.files;
+      alert("ファイルが選ばれました。次に『gltfbeauty を開く』を押してください。");
+    });
+
+    btn.addEventListener("click", () => {
+      window.open("https://code4fukui.github.io/gltfbeauty/", "_blank");
+    });
+  </script>
+</body>
+</html>
