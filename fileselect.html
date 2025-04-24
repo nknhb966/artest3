@@ -2,29 +2,91 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>スマホでも使えるGLTF Beauty</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <title>gltfbeauty</title>
+  <meta property="og:title" content="gltfbeauty">
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:image" content="https://code4fukui.github.io/gltfbeauty/gltfbeauty.png">
+  <meta property="og:image"  content="https://code4fukui.github.io/gltfbeauty/gltfbeauty.png">
 </head>
 <body>
-  <h2>GLTF/GLB ファイルを選択して開く</h2>
-  <p>ファイルを選ぶと <code>gltfbeauty</code> を開いて、そのままドロップできます。</p>
+  <div class="container mt-4">
+    <h1 class="text-center">GLTF Beauty</h1>
+    <div id="divmain" class="border p-4 text-center">
+      GLTF/GLBファイルをドロップしてください / drop GLTF/GLB here
+    </div>
+    <div class="mt-3 text-center">
+      <input type="file" id="fileInput" class="btn btn-primary" accept=".gltf,.glb">
+    </div>
+  </div>
 
-  <input type="file" id="fileinput" accept=".gltf,.glb" multiple>
-  <br><br>
-  <button id="openbtn">gltfbeauty を開く</button>
+  <script type="module">
+    import { downloadZip } from "https://code4sabae.github.io/js/downloadZip.js";
+    import { waitDropFiles } from "https://code4sabae.github.io/js/waitDropFiles.js";
+    import { downloadFile } from "https://code4sabae.github.io/js/downloadFile.js";
+    import { readAsArrayBufferAsync } from "https://code4sabae.github.io/js/readAsArrayBufferAsync.js";
+    import { ImageUtil } from "https://code4fukui.github.io/ImageUtil/ImageUtil.js";
+    import { GLTF } from "https://code4fukui.github.io/GLTF/GLTF.js";
+    import { GLB } from "https://code4fukui.github.io/GLTF/GLB.js";
 
-  <script>
-    const input = document.getElementById("fileinput");
-    const btn = document.getElementById("openbtn");
+    const resizeImage = async (imgbin, imgw, imgq, imgc = "srgb") => {
+      const img = await ImageUtil.getImageFromArrayBuffer(imgbin);
+      const img2 = await ImageUtil.resizeImage(img, "image/jpeg", imgw, imgc);
+      const jpeg = await ImageUtil.getArrayBufferFromImage(img2, "image/jpeg", imgq, imgc);
+      const data = new Uint8Array(jpeg);
+      console.log(jpeg);
+      return data;
+    };
 
-    let filesToDrop = null;
+    A: for (;;) {
+      divmain.innerHTML = "GLTF/GLBファイルをドロップしてください / drop GLTF/GLB here";
+      const items = await waitDropFiles(divmain);
+      const files = [];
+      for (const item of items) {
+        const name = item.file.name;
+        if (!name.endsWith(".gltf") && !name.endsWith(".glb")) {
+          alert("ファイル形式が違います。GLTFファイルまたはGLBファイルをドロップしてください\nnot GLTF/GLB");
+          continue A;
+        }
+        try {
+          const file = item.file;
+          console.log("ドロップされたファイル: ", file.name);
+          // ここに処理を追加
+        } catch (e) {
+          alert("ファイル読み込み中にエラーが発生しました");
+          console.error(e);
+        }
+      }
+    }
 
-    input.addEventListener("change", () => {
-      filesToDrop = input.files;
-      alert("ファイルが選ばれました。次に『gltfbeauty を開く』を押してください。");
-    });
+    // ファイル選択ボタンによる読み込み処理
+    const fileInput = document.getElementById("fileInput");
+    fileInput.addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
 
-    btn.addEventListener("click", () => {
-      window.open("https://code4fukui.github.io/gltfbeauty/", "_blank");
+      const name = file.name;
+      if (!name.endsWith(".gltf") && !name.endsWith(".glb")) {
+        alert("ファイル形式が違います。GLTFファイルまたはGLBファイルを選択してください");
+        return;
+      }
+
+      try {
+        console.log("選択されたファイル: ", file.name);
+        const bin = await readAsArrayBufferAsync(file);
+        let gltf;
+        if (file.name.endsWith(".glb")) {
+          gltf = GLB.decode(bin);
+        } else {
+          gltf = JSON.parse(new TextDecoder().decode(bin));
+        }
+        console.log("読み込んだGLTF:", gltf);
+        // ここにgltfを扱う処理を追加できます
+      } catch (e) {
+        alert("ファイル処理中にエラーが発生しました");
+        console.error(e);
+      }
     });
   </script>
 </body>
