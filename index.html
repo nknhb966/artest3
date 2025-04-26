@@ -8,7 +8,7 @@
 <script type="module">
 import { downloadZip } from "https://code4sabae.github.io/js/downloadZip.js";
 import { waitDropFiles } from "https://code4sabae.github.io/js/waitDropFiles.js";
-// import { downloadFile } from "https://code4sabae.github.io/js/downloadFile.js";
+import { downloadFile } from "https://code4sabae.github.io/js/downloadFile.js";
 import { readAsArrayBufferAsync } from "https://code4sabae.github.io/js/readAsArrayBufferAsync.js";
 import { ImageUtil } from "https://code4fukui.github.io/ImageUtil/ImageUtil.js";
 import { GLTF } from "https://code4fukui.github.io/GLTF/GLTF.js";
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   (async () => {
     for (;;) {
-      divmain.innerHTML = "GLTF/GLBファイルをドロップしてください / drop GLTF/GLB here";
+      divmain.innerHTML = "GLTF/GLBファイルをドロップしてください. / drop GLTF/GLB here";
       const items = await waitDropFiles(divmain);
       const files = [];
       for (const item of items) {
