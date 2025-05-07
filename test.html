@@ -52,6 +52,15 @@
 </head>
 <body>
 
+<script>
+const viewer = document.getElementById("viewer");
+
+// ARモードの開始前にスケールを設定
+viewer.addEventListener('beforexrselect', () => {
+  viewer.scale = '0.1 0.1 0.1';
+});
+</script>
+
 <model-viewer
   ar
   ar-modes="scene-viewer webxr quick-look"
