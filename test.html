@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>越前国府発掘プロジェクトAR_遺構表示</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  .hotspot {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border: none;
+    background-color: blue;
+    box-sizing: border-box;
+    pointer-events: none;
+  }
+
+  .hotspot[slot="hotspot-description"]:not([data-visible]) {
+    border: 3px solid blue;
+  }
+
+  .annotation {
+    background-color: #888888;
+    position: absolute;
+    transform: translate(10px, 10px);
+    border-radius: 10px;
+    padding: 10px;
+    width: 100px;
+    text-align: left;
+  }
+
+  :not(:defined) > * {
+    display: none;
+  }
+
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  model-viewer {
+    width: 90vw;
+    height: 90vh;
+  }
+</style>
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+</head>
+<body>
+
+<model-viewer
+  ar
+  ar-modes="scene-viewer webxr quick-look"
+  src="https://echizencity.github.io/opendata/kokufuhakkutsu/00101_kokufuhakkutsu_small.glb"
+  alt="越前国府発掘プロジェクト遺構表示"
+  camera-controls
+  autoplay
+  orientation="90deg 0deg 90deg"
+>
+
+  <div class="annotation" style="top: 50px; left: 50px; width:200px;">越前国府発掘プロジェクト</div>
+
+</model-viewer>
+
+</body>
+</html>
