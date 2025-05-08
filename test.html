@@ -53,12 +53,14 @@
 <body>
 
 <script>
-const viewer = document.getElementById("viewer");
+  const viewer = document.getElementById("viewer");
 
-// ARモードの開始前にスケールを設定
-viewer.addEventListener('beforexrselect', () => {
-  viewer.scale = '0.1 0.1 0.1';
-});
+  // ARモード開始前に初期スケールを0.1に設定
+  viewer.addEventListener('ar-status', (event) => {
+    if (event.detail.status === 'session-started') {
+      viewer.setAttribute('scale', '0.1 0.1 0.1');
+    }
+  });
 </script>
 
 <model-viewer
@@ -71,7 +73,7 @@ viewer.addEventListener('beforexrselect', () => {
   orientation="90deg -20deg 90deg"
 >
 
-  <div class="annotation" style="top: 50px; left: 50px; width:200px;">越前国府発掘プロジェクト</div>
+  <div class="annotation" style="top: 50px; left: 50px; width:200px;">越前国府発掘プロジェクト.</div>
 
 </model-viewer>
 
