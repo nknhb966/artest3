@@ -52,17 +52,6 @@
 </head>
 <body>
 
-<script>
-  const viewer = document.getElementById("viewer");
-
-  // ARモード開始前に初期スケールを0.1に設定
-  viewer.addEventListener('ar-status', (event) => {
-    if (event.detail.status === 'session-started') {
-      viewer.setAttribute('scale', '0.1 0.1 0.1');
-    }
-  });
-</script>
-
 <model-viewer
   ar
   ar-modes="scene-viewer webxr quick-look"
@@ -72,6 +61,7 @@
   camera-controls
   autoplay
   orientation="90deg -20deg 90deg"
+  scale="0.1 0.1 0.1"
 >
 
   <div class="annotation" style="top: 50px; left: 50px; width:200px;">越前国府発掘プロジェクト</div>
