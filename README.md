@@ -106,8 +106,8 @@
 
 |path|name|
 |----|----|
-|./models/hajiki01_model.glb|土師器|
-|./models/sueki03_model.glb|須恵器|
+|`./models/hajiki01_model.glb`|土師器|
+|`./models/sueki03_model.glb`|須恵器|
 
 - 半角カンマ区切り
 - 1行目は `path,name` のままでOK
