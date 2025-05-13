@@ -117,6 +117,12 @@
 
 - 公開URLにアクセスし、ページが更新されているか確認：
 
+|名称|端末|URL|
+|----|----|----|
+|AR Lite|ヘッドセット|`https://username.github.io/reponame/`|
+|AR Event|スマホ|`https://username.github.io/reponame/event.html`|
+|AR Go|スマホ|`https://username.github.io/reponame/go.html`|
+
 ### 5-2. 動作確認（スマホ）
 
 - ARボタンで起動するか確認（AR対応機種で）
