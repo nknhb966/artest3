@@ -19,7 +19,7 @@
 
 ### 全国向けスターターキット
 
-全国の地域や団体で craftARt を活用いただくためのテンプレートはこちら：
+地域や団体で craftARt を活用いただくためのテンプレートはこちら：
 
 - **[craftARt kit](https://github.com/echizencity/craftARt-kit)**  
   GitHub Pages をベースに、誰でも無料・簡単にAR展示が始められる導入キットです。
