@@ -21,6 +21,14 @@
 
 ---
 
+## 使用ライブラリ
+
+- [model-viewer](https://modelviewer.dev/)
+- [egxr.js](https://github.com/code4fukui/egxr.js/)
+- [threeutil.js](https://code4fukui.github.io/vr-lenspark/threeutil.js)
+
+---
+
 ## 1. GitHub リポジトリを準備
 
 ### 1-1. GitHub アカウントを作成（無料）
