@@ -127,9 +127,9 @@
 
 |名称|端末|URL|
 |----|----|----|
-|AR Lite|ヘッドセット|`https://username.github.io/reponame/`|
 |AR Event|スマホ|`https://username.github.io/reponame/event.html`|
 |AR Go|スマホ|`https://username.github.io/reponame/go.html`|
+|AR Lite|ヘッドセット|`https://username.github.io/reponame/`|
 
 ### 5-2. 動作確認（スマホ）
 
