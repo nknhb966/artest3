@@ -162,9 +162,10 @@
 
 #### 2. GLBやAPPを指定
 
-- `index.html` の13行目：GLBファイルの場所  
-- 14行目：APPの場所を指定
+- `index.html` の13行目がGLBファイルの場所、14行目がAPPの場所を指定している
+- コメントアウトされた<!-- https://・・・ -->をhttps://・・・だけの表記にする
 
 ```html
+
 <!-- https://github.com/username/reponame/tree/main/models/ -->
 <!-- https://github.com/username/reponame/tree/main/ -->
