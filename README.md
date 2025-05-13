@@ -171,6 +171,5 @@
 
 ↓
 
-```html
- https://github.com/username/reponame/tree/main/models/
+https://github.com/username/reponame/tree/main/models/
 https://github.com/username/reponame/tree/main/
