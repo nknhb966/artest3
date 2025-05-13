@@ -28,7 +28,7 @@
 
 ## 1. GitHub リポジトリを準備
 
-### 1-1. GitHub アカウントを作成（無料）
+### 1-1. GitHub アカウントを作成
 
 - https://github.com にアクセスし、アカウントを登録
 - ユーザー名とメールアドレスを設定
@@ -71,8 +71,7 @@
 - [ファイルに保存]を選択  
   ファイル名を以下の形式で変更（日本語・スペースNG）
 
-例：  
-`hajiki01_model.glb`, `sueki03_model.glb`
+例：`hajiki01_model.glb`,`sueki03_model.glb`
 
 ---
 
