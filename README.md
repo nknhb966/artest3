@@ -1,17 +1,19 @@
 # 作成方法
 
-## 0-1. 概要
+## 0. はじめに
+
+### 0-1. 概要
 
 スマートフォンのみで、ARのWebアプリを作成する方法を以下に説明します。スマホにScaniverseアプリをインストールし、GitHub Pagesに3Dモデル化したデータをアップロードするだけで完成。
 
-## 0-2. 必要なもの
+### 0-2. 必要なもの
 
 - スマートフォン（iOSまたはAR対応のAndroid）
 - 3Dモデル化したい対象物
 - GitHubアカウント（GitHub Pages推奨）
 - Scaniverseアプリ（または代替スキャンアプリ）
 
-## 0-3. その他
+### 0-3. その他
 
 - PC不要  
 - アプリ開発スキル不要  
@@ -34,7 +36,6 @@
   https://www.github.com/echizencity/arkit
 - [Fork]を選択
 - （必要に応じて）「Repository name」を変更: `arkit` → `reponame`
-- 越前市の場合、「Owner」に「223061」と「echizencity」があるので、「echizencity」を選択
 - [Create fork]で自分のアカウント下に作業用リポジトリを作成
 
 ### 1-4. GitHub Pages を有効化
