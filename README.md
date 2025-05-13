@@ -14,8 +14,8 @@
 | アプリ名           | 用途                         | 端末 | HTML |
 |--------------------|------------------------------|--------|--------|
 | **craftARt Lite**  | ヘッドセット向け軽量ビューア | ヘッドセット | `/index.html` |
-| **craftARt Event** | イベント向けARビューア    | スマホ | `/event.html` |
-| **craftARt Go**    | 簡易型AR体験 | スマホ | `/go.html` |
+| **craftARt Event** | イベント向けAR体験    | スマホ | `/event.html` |
+| **craftARt Go**    | 簡易型ARビューア | スマホ | `/go.html` |
 
 ### 全国向けスターターキット
 
