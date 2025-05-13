@@ -15,7 +15,7 @@
 
 本リポジトリは越前市版の「craftARt」であり、地域文化を拡張現実（AR）として再発信する取り組みです。
 
-### アプリ種別
+## アプリ種別
 
 | アプリ名           | 用途                         | 端末 | HTML |
 |--------------------|------------------------------|--------|--------|
@@ -23,20 +23,20 @@
 | **craftARt Event** | イベント向けAR体験    | スマホ | `/event.html` |
 | **craftARt Go**    | 簡易型ARビューア | スマホ | `/go.html` |
 
-### 全国向けスターターキット
+## 全国向けスターターキット
 
 地域や団体で craftARt を活用いただくためのテンプレートはこちら：
 
 - **[craftARt kit](https://github.com/echizencity/craftARt-kit)**  
   GitHub Pages をベースに、誰でも無料・簡単にAR展示が始められる導入キットです。
 
-### 使用ライブラリ
+## 使用ライブラリ
 
 - [model-viewer](https://modelviewer.dev/)
 - [egxr.js](https://github.com/code4fukui/egxr.js/blob/main/egxr.js) （Code for Fukui）
 - [threeutil.js](https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js) （Code for Fukui）
 
-### ライセンス
+## ライセンス
 
 このプロジェクトは **MITライセンス** のもとで公開されています。  
 ご自由に利用・改変・再配布が可能です。
