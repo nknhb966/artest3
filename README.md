@@ -139,8 +139,8 @@
   ※チラシ作成にも続くためPCで行った方が良い
 
 - 作成対象URL：  
-  （Event）https://username.github.io/reponame/event.html  
-  （Go）https://username.github.io/reponame/go.html
+  （Event）｀`https://username.github.io/reponame/event.html`  
+  （Go）`https://username.github.io/reponame/go.html`
 
 ### 6-2. QRコードを印刷・配布
 
@@ -169,7 +169,9 @@
 <!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
 <!--     APP: <a href="https://github.com/echizencity/arkit/tree/main/">src on GitHub</a><br> -->
 
-↓
+↓（）
+
+
 
 GLB: <a href="https://github.com/username/reponame/tree/main/models/">〜〜〜〜</a><br>
 APP: <a href="https://github.com/username/reponame/tree/main/">src on GitHub</a><br>
