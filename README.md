@@ -136,7 +136,6 @@
 
 - おすすめツール：QRコード作成（jig.jp）  
   https://fukuno.jig.jp/app/util/qrmaker/  
-  ※チラシ作成にも続くためPCで行った方が良い
 
 - 作成対象URL：  
   （Event）`https://username.github.io/reponame/event.html`  
