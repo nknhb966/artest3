@@ -1,4 +1,6 @@
-# craftARt越前
+# craftARt
+
+## craftARt越前
 
 **craftARt（クラフタート）** は、「手作りをARで届ける」ことをコンセプトとした、  
 地域文化・工芸・展示物をスマートフォンでAR体験できるWebアプリキットです。
@@ -7,24 +9,18 @@
 
 > **craftARt = craft（手作り） + AR（拡張現実） + art（文化・芸術）**
 
----
-
-## 使用ライブラリ
+### 使用ライブラリ
 
 - [model-viewer](https://modelviewer.dev/)
 - [egxr.js](https://github.com/code4fukui/egxr.js/blob/main/egxr.js) （Code for Fukui）
 - [threeutil.js](https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js) （Code for Fukui）
 
----
-
-## ライセンス
+### ライセンス
 
 このプロジェクトは **MITライセンス** のもとで公開されています。  
-ご自由に利用・改変・再配布が可能ですが、ライセンス表記を残してください。
+ご自由に利用・改変・再配布が可能です。
 
----
-
-## アプリ種別
+### アプリ種別
 
 | アプリ名           | 用途                         | URL例 |
 |--------------------|------------------------------|--------|
@@ -32,13 +28,11 @@
 | **craftARt Event** | 展示会・講演会向けARビューア    | `/event.html` |
 | **craftARt Go**    | 屋外・巡回型AR体験（位置情報対応） | `/go.html` |
 
----
-
-## 全国向けスターターキット
+### 全国向けスターターキット
 
 全国の地域や団体で craftARt を活用いただくためのテンプレートはこちら：
 
-- **[craftARt kit](https://github.com/craftARt/kit)**  
+- **[craftARt kit](https://github.com/echizencity/craftARt-kit)**  
   GitHub Pages をベースに、誰でも無料・簡単にAR展示が始められる導入キットです。
 
 ---
