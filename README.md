@@ -171,5 +171,5 @@
 
 ↓
 
-https://github.com/username/reponame/tree/main/models/
-https://github.com/username/reponame/tree/main/
+GLB: <a href="https://github.com/username/reponame/tree/main/models/">〜〜〜〜</a><br>
+APP: <a href="https://github.com/username/reponame/tree/main/">src on GitHub</a><br>
