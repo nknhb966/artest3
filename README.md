@@ -166,8 +166,8 @@
 
 ```html
 
-<!-- https://github.com/username/reponame/tree/main/models/ -->
-<!-- https://github.com/username/reponame/tree/main/ -->
+<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
+<!--     APP: <a href="https://github.com/echizencity/arkit/tree/main/">src on GitHub</a><br> -->
 
 ↓
 
