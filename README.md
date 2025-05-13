@@ -73,7 +73,7 @@
 ### 1-3. 制作キットを自分のリポジトリにコピー
 
 - 「craftARt-kit」のGitHubリポジトリを開く  
-  https://www.github.com/echizencity/arkit
+  https://www.github.com/echizencity/craftARt-kit
 - [Fork]を選択
 - 「Repository name」を変更: `craftARt-kit` → `reponame`
 - [Create fork]で自分のアカウント下に作業用リポジトリを作成
