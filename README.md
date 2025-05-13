@@ -167,7 +167,7 @@
 `<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->`  
 `<!--     APP: <a href="https://github.com/echizencity/arkit/tree/main/">src on GitHub</a><br> -->`
 
-↓コメントアウトを解除して、URLを修正する
+↓コメントアウトを解除して、URL等を修正する
 
 `GLB: <a href="https://github.com/username/reponame/tree/main/models/">〜〜〜〜</a><br>`  
 `APP: <a href="https://github.com/username/reponame/tree/main/">src on GitHub</a><br>`
