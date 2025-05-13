@@ -163,9 +163,14 @@
 #### 2. GLBやAPPを指定
 
 - `index.html` の13行目がGLBファイルの場所、14行目がAPPの場所を指定している
-- コメントアウトされた<!-- https://・・・ -->をhttps://・・・だけの表記にする
 
 ```html
 
 <!-- https://github.com/username/reponame/tree/main/models/ -->
 <!-- https://github.com/username/reponame/tree/main/ -->
+
+↓
+
+```html
+ https://github.com/username/reponame/tree/main/models/
+https://github.com/username/reponame/tree/main/
