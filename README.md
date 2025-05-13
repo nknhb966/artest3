@@ -19,9 +19,7 @@
 - アプリ開発スキル不要  
 - インターネット接続とブラウザがあればOK！
 
----
-
-## 使用ライブラリ
+### 0-4. 使用ライブラリ
 
 - [model-viewer](https://modelviewer.dev/)
 - [egxr.js](https://github.com/code4fukui/egxr.js/blob/main/egxr.js) （Code for Fukui）
