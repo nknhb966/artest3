@@ -35,7 +35,7 @@
 - 「arkit」のGitHubリポジトリを開く  
   https://www.github.com/echizencity/arkit
 - [Fork]を選択
-- （必要に応じて）「Repository name」を変更: `arkit` → `reponame`
+- 「Repository name」を変更: `arkit` → `reponame`
 - [Create fork]で自分のアカウント下に作業用リポジトリを作成
 
 ### 1-4. GitHub Pages を有効化
