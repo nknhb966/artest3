@@ -24,8 +24,8 @@
 ## 使用ライブラリ
 
 - [model-viewer](https://modelviewer.dev/)
-- [egxr.js](https://github.com/code4fukui/egxr.js/) （Code for Fukui）
-- [threeutil.js](https://code4fukui.github.io/vr-lenspark/threeutil.js) （Code for Fukui）
+- [egxr.js](https://github.com/code4fukui/egxr.js/blob/main/egxr.js) （Code for Fukui）
+- [threeutil.js](https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js) （Code for Fukui）
 
 ---
 
