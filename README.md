@@ -79,10 +79,10 @@
 
 ### 1-3. 制作キットを自分のリポジトリにコピー
 
-- 「arkit」のGitHubリポジトリを開く  
+- 「craftARt-kit」のGitHubリポジトリを開く  
   https://www.github.com/echizencity/arkit
 - [Fork]を選択
-- 「Repository name」を変更: `arkit` → `reponame`
+- 「Repository name」を変更: `craftARt-kit` → `reponame`
 - [Create fork]で自分のアカウント下に作業用リポジトリを作成
 
 ### 1-4. GitHub Pages を有効化
@@ -113,7 +113,7 @@
 - [ファイルに保存]を選択  
   ファイル名を以下の形式で変更（日本語・スペースNG）
 
-例：`hajiki01_model.glb`,`sueki03_model.glb`
+例：`hajiki01.glb`,`sueki03.glb`
 
 ---
 
@@ -152,8 +152,8 @@
 
 |path|name|
 |----|----|
-|`./models/hajiki01_model.glb`|土師器|
-|`./models/sueki03_model.glb`|須恵器|
+|`./models/hajiki01.glb`|土師器|
+|`./models/sueki03.glb`|須恵器|
 
 - 半角カンマ区切り
 - 1行目は `path,name` のままでOK
@@ -169,9 +169,9 @@
 
 |名称|端末|URL|
 |----|----|----|
-|AR Event|スマホ|`https://username.github.io/reponame/event.html`|
-|AR Go|スマホ|`https://username.github.io/reponame/go.html`|
-|AR Lite|ヘッドセット|`https://username.github.io/reponame/`|
+|craftARt Event|スマホ|`https://username.github.io/reponame/event.html`|
+|craftARt Go|スマホ|`https://username.github.io/reponame/go.html`|
+|craftARt Lite|ヘッドセット|`https://username.github.io/reponame/`|
 
 ### 5-2. 動作確認（スマホ）
 
@@ -220,7 +220,7 @@
 - `index.html` の13行目がGLBファイルの場所、14行目がAPPの場所を指定している
 
 `<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->`  
-`<!--     APP: <a href="https://github.com/echizencity/arkit/tree/main/">src on GitHub</a><br> -->`
+`<!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->`
 
 ↓コメントアウトを解除して、URL等を修正する
 
