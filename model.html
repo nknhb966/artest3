@@ -74,7 +74,6 @@
       padding: 0.5em 1em;
       width: 150px;
       text-align: left;
-      font-size: 1.2em;
     }
 
     .urltext {
@@ -82,7 +81,6 @@
       text-align: center;
       bottom: 10px;
       right: 10px;
-      font-size: 1em;
     }
 
     .hotspot, .urltext {
@@ -173,18 +171,18 @@
 
     function parseCSV(csvData) {
       const lines = csvData.trim().split('\n');
-      const headers = lines[0].split(',');
+      const headers = lines[0].split(',').map(h => h.trim());
       const result = [];
 
       for (let i = 1; i < lines.length; i++) {
         const obj = {};
         const currentline = lines[i].split(',');
         for (let j = 0; j < headers.length; j++) {
-          obj[headers[j].trim()] = currentline[j].trim();
+          obj[headers[j]] = currentline[j]?.trim() ?? "";
         }
         result.push(obj);
       }
-      return result;
+      return { data: result, headers };
     }
 
     async function initialize() {
@@ -195,7 +193,10 @@
       const annotation = hotspot.querySelector(".annotation");
       const urltext = viewer.querySelector(".urltext");
 
-      const records = await loadCSV(csvUrl);
+      const { data: records, headers } = await loadCSV(csvUrl);
+
+      const hasDescription = headers.includes("description");
+      const hasUrl = headers.includes("url");
 
       modelSelect.innerHTML = "";
       records.forEach((item, index) => {
@@ -209,7 +210,7 @@
         viewer.src = path;
         viewer.alt = name;
 
-        if (description && description.trim() !== "") {
+        if (hasDescription && description && description.trim() !== "") {
           annotation.textContent = description;
           hotspot.style.display = "block";
         } else {
@@ -217,7 +218,7 @@
           hotspot.style.display = "none";
         }
 
-        if (url && url.trim() !== "") {
+        if (hasUrl && url && url.trim() !== "") {
           urltext.innerHTML = `<a href="${url}" target="_blank" rel="noopener">関連URLを開く</a>`;
           urltext.style.display = "block";
         } else {
