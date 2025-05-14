@@ -10,7 +10,7 @@
 
 の3つを組み合わせた造語です。  
 地域の文化財やものづくりを、AR技術で新しい形に再発信することを目指すWebアプリです。  
-[Code for Fukui](https://code4fukui.github.io)の協力で作成しました。
+このアプリは[Code for Fukui](https://code4fukui.github.io)の協力で作成しました。
 
 
 ## craftARt 越前 とは？
