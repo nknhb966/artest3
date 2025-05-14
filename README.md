@@ -26,12 +26,12 @@
 | **craftARt Event** | イベント向けAR体験    | スマホ | `/event.html` |
 | **craftARt Go**    | 簡易型ARビューア | スマホ | `/go.html` |
 
-### スターターキット
+### 導入キット
 
-地域や団体で craftARt を活用いただくためのテンプレートはこちら（クラフタートキット）：
+地域や団体で craftARt を活用いただくための導入キットはこちら：
 
 - **[craftARt kit](https://github.com/echizencity/craftARt-kit)**  
-  GitHub Pages をベースに、誰でも無料・簡単にAR展示が始められる導入キットです。
+  GitHub Pages をベースに、誰でも無料・簡単にAR展示が始められる導入キット（クラフタートキット）です。
 
 ### 使用ライブラリ
 
