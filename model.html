@@ -52,6 +52,43 @@
       display: none;
     }
 
+    .hotspot {
+      width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      border: none;
+      background-color: blue;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+
+    .hotspot[slot="hotspot-description"]:not([data-visible]) {
+      border: 3px solid blue;
+    }
+
+    .annotation {
+      background-color: #cce3f6;
+      position: absolute;
+      transform: translate(10px, 10px);
+      border-radius: 8px;
+      padding: 0.5em 1em;
+      width: 150px;
+      text-align: left;
+    }
+
+    .annotationurl {
+      background-color: #9999;
+      position: absolute;
+      border-radius: 5px;
+      padding: 0.5em 1em;
+      text-align: center;
+      bottom: 50px; right: 50px;
+    }
+
+    .hotspot, .annotationurl {
+      display: none;
+    }
+
     .btn {
       display: inline-block;
       padding: 0.5em 1em;
@@ -108,6 +145,13 @@
     camera-controls
     autoplay
   >
+
+  <button class="hotspot" slot="hotspot-visor" data-position="0 0 0" data-normal="0 0 0">
+    <div class="annotation">description text</div>
+  </button>
+
+  <div class="annotationurl">関連URL</div>
+
   </model-viewer>
 
   <div>
@@ -147,6 +191,9 @@
       const modelSelect = document.getElementById("modelSelect");
       const viewer = document.getElementById("viewer");
       const arButton = document.getElementById("arButton");
+      const hotspot = viewer.querySelector(".hotspot");
+      const annotation = hotspot.querySelector(".annotation");
+      const annotationUrl = viewer.querySelector(".annotationurl");
 
       const records = await loadCSV(csvUrl);
 
@@ -158,16 +205,32 @@
         modelSelect.appendChild(option);
       });
 
-      async function loadModel(path, name) {
+      async function loadModel(path, name, description, url) {
         viewer.src = path;
         viewer.alt = name;
+
+        if (description && description.trim() !== "") {
+          annotation.textContent = description;
+          hotspot.style.display = "block";
+        } else {
+          annotation.textContent = "";
+          hotspot.style.display = "none";
+        }
+
+        if (url && url.trim() !== "") {
+          annotationUrl.innerHTML = `<a href="${url}" target="_blank" rel="noopener">関連URLを開く</a>`;
+          annotationUrl.style.display = "block";
+        } else {
+          annotationUrl.innerHTML = "";
+          annotationUrl.style.display = "none";
+        }
       }
 
       modelSelect.addEventListener("change", async (e) => {
         const selectedIndex = e.target.value;
         const item = records[selectedIndex];
         if (item) {
-          await loadModel(item.path, item.name);
+          await loadModel(item.path, item.name, item.description, item.url);
         }
       });
 
@@ -176,7 +239,8 @@
       });
 
       if (records.length > 0) {
-        await loadModel(records[0].path, records[0].name);
+        const first = records[0];
+        await loadModel(first.path, first.name, first.description, first.url);
       }
     }
 
