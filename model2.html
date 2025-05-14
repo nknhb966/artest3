@@ -26,7 +26,7 @@
     }
 
     h1 {
-      font-size: 1.8em;
+      font-size: 1.5em;
       color: #333;
       margin: 0;
     }
@@ -91,6 +91,27 @@
       background-color: #fff;
       color: #333;
       margin-top: 0.3em;
+    }
+
+    .model-info {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .descriptiontext {
+      background-color: #cce3f6;
+      border-radius: 8px;
+      padding: 0.5em 1em;
+      width: auto;
+      max-width: 80%;
+      margin: 1rem auto;
+      text-align: left;
+    }
+
+    .urltext {
+      text-align: center;
+      margin-bottom: 1rem;
     }
 
     .btn {
@@ -205,6 +226,11 @@
     </select>
   </div>
 
+  <div class="model-info">
+    <div id="descriptionText" class="descriptiontext"></div>
+    <div id="urlText" class="urltext">関連URL</div>
+  </div>
+
   <div id="ar-controls">
     <div class="btn" id="arButton">ARスタート</div>
 
@@ -233,6 +259,8 @@
   </div>
 
   <script>
+    const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
+
     async function loadCSV(url) {
       const response = await fetch(url);
       const text = await response.text();
@@ -241,18 +269,18 @@
 
     function parseCSV(csvData) {
       const lines = csvData.trim().split('\n');
-      const headers = lines[0].split(',');
+      const headers = lines[0].split(',').map(h => h.trim());
       const result = [];
 
       for (let i = 1; i < lines.length; i++) {
         const obj = {};
         const currentline = lines[i].split(',');
         for (let j = 0; j < headers.length; j++) {
-          obj[headers[j].trim()] = currentline[j]?.trim();
+          obj[headers[j]] = currentline[j]?.trim() ?? "";
         }
         result.push(obj);
       }
-      return result;
+      return { data: result, headers };
     }
 
     async function initialize() {
@@ -260,46 +288,69 @@
       const viewer = document.getElementById("viewer");
       const arButton = document.getElementById("arButton");
       const modelButton = document.getElementById("modelButton");
-
-      const csvUrl = "https://nknhb966.github.io/artest3/models.csv";
+      const annotation = document.querySelector(".annotation");
+      const urltext = document.querySelector(".urltext");
 
       try {
-        const records = await loadCSV(csvUrl);
+        const { data: records, headers } = await loadCSV(csvUrl);
+
+        const hasDescription = headers.includes("description");
+        const hasUrl = headers.includes("url");
+
         modelSelect.innerHTML = "";
 
         records.forEach((item) => {
           if (!item.path || !item.name) return;
+
           const option = document.createElement("option");
           option.value = item.path;
           option.textContent = item.name;
           option.dataset.name = item.name;
+          option.dataset.description = hasDescription ? item.description || "" : "";
+          option.dataset.url = hasUrl ? item.url || "" : "";
+
           modelSelect.appendChild(option);
         });
 
-        async function loadModel(path, name) {
+        async function loadModel(path, name, description = "", url = "") {
           viewer.src = path;
           viewer.alt = name;
+
+          const descriptionEl = document.getElementById("descriptionText");
+          const urlEl = document.getElementById("urlText");
+
+          if (description) {
+            descriptionEl.textContent = description;
+            descriptionEl.style.display = "block";
+          } else {
+            descriptionEl.style.display = "none";
+          }
+
+          if (url) {
+            urlEl.innerHTML = `<a href="${url}" target="_blank" rel="noopener">関連リンクはこちら</a>`;
+            urlEl.style.display = "block";
+          } else {
+            urlEl.style.display = "none";
+          }
         }
 
         modelSelect.addEventListener("change", async (e) => {
-          const path = e.target.value;
-          const name = e.target.selectedOptions[0].dataset.name;
+          const selectedOption = e.target.selectedOptions[0];
+          const path = selectedOption.value;
+          const name = selectedOption.dataset.name;
+          const description = selectedOption.dataset.description;
+          const url = selectedOption.dataset.url;
+
           if (path) {
-            await loadModel(path, name);
+            await loadModel(path, name, description, url);
           }
         });
 
-        arButton.addEventListener("click", () => {
-          viewer.activateAR();
-          viewer.style.display = "none";
-        });
-
-        modelButton.addEventListener("click", () => {
-          viewer.style.display = "block";
-        });
-
         if (records.length > 0) {
-          await loadModel(records[0].path, records[0].name);
+          const first = records[0];
+          const description = hasDescription ? first.description || "" : "";
+          const url = hasUrl ? first.url || "" : "";
+          await loadModel(first.path, first.name, description, url);
         }
 
       } catch (error) {
