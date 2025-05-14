@@ -346,6 +346,15 @@
           }
         });
 
+        arButton.addEventListener("click", () => {
+          viewer.activateAR();
+          viewer.style.display = "none";
+        });
+
+        modelButton.addEventListener("click", () => {
+          viewer.style.display = "block";
+        });
+
         if (records.length > 0) {
           const first = records[0];
           const description = hasDescription ? first.description || "" : "";
