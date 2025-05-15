@@ -16,7 +16,6 @@
     <select id="modelSelect"></select>
   </header>
 
-
   <script type="importmap">
   {
     "imports": {
@@ -82,11 +81,12 @@
     for (const child of menu.children) {
       const worldPos = child.getWorldPosition(new THREE.Vector3());
       if (ctrl.position.distanceTo(worldPos) < 0.05) {
+        if (child.userData?.isURL && child.userData?.url) {
+          window.open(child.userData.url, "_blank");
+          return;
+        }
         if (currentModel?.userData?.path === child.userData.path) return;
         loadModel(child.userData.path, child.userData.name);
-      }
-      if (child.userData.isURL && child.userData.url) {
-        window.open(child.userData.url, "_blank");
         return;
       }
     }
