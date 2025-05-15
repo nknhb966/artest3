@@ -91,26 +91,46 @@
   };
 
   // ラベルボタン作成関数
-  const createLabelButton = (text, color = "#44ccff", width = 512, height = 128) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = color;
-    ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = "#000000";
-    ctx.font = "bold 40px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, width / 2, height / 2);
+  // const createLabelButton = (text, color = "#44ccff", width = 512, height = 128) => {
+  //   const canvas = document.createElement("canvas");
+  //   canvas.width = width;
+  //   canvas.height = height;
+  //   const ctx = canvas.getContext("2d");
+  //   ctx.fillStyle = color;
+  //   ctx.fillRect(0, 0, width, height);
+  //   ctx.fillStyle = "#000000";
+  //   ctx.font = "bold 40px sans-serif";
+  //   ctx.textAlign = "center";
+  //   ctx.textBaseline = "middle";
+  //   ctx.fillText(text, width / 2, height / 2);
 
-    const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-    const geometry = new THREE.PlaneGeometry(0.16, 0.04);
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.userData.label = text;
-    return mesh;
-  };
+  //   const texture = new THREE.CanvasTexture(canvas);
+  //   const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+  //   const geometry = new THREE.PlaneGeometry(0.16, 0.04);
+  //   const mesh = new THREE.Mesh(geometry, material);
+  //   mesh.userData.label = text;
+  //   return mesh;
+  // };
+const createLabelButton = (text, bgColor = "#44ccff", textColor = "#000000", width = 512, height = 128) => {
+const canvas = document.createElement("canvas");
+canvas.width = width;
+canvas.height = height;
+const ctx = canvas.getContext("2d");
+ctx.fillStyle = bgColor;
+ctx.fillRect(0, 0, width, height);
+ctx.fillStyle = textColor;
+ctx.font = "bold 40px sans-serif";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillText(text, width / 2, height / 2);
+
+const texture = new THREE.CanvasTexture(canvas);
+const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+const geometry = new THREE.PlaneGeometry(0.16, 0.04);
+const mesh = new THREE.Mesh(geometry, material);
+mesh.userData.label = text;
+return mesh;
+};
 
   const menu = new THREE.Group();
   scene.add(menu);
@@ -119,30 +139,21 @@
   let currentModel = null;
   let showInfo = true;
 
-  // const onMenuClick = (ctrl) => {
-  //   for (const child of menu.children) {
-  //     const worldPos = child.getWorldPosition(new THREE.Vector3());
-  //     if (ctrl.position.distanceTo(worldPos) < 0.1) {
-  //       if (currentModel?.userData?.path === child.userData.path) return;
-  //       loadModel(child.userData.path, child.userData.name);
-  //     }
-  //   }
-  // };
-
-const onMenuClick = (ctrl) => {
-for (const child of menu.children) {
-const worldPos = child.getWorldPosition(new THREE.Vector3());
-if (ctrl.position.distanceTo(worldPos) < 0.1) {
-if (child.userData.toggleInfo) {
-showInfo = !showInfo;
-updateInfoVisibility();
-return;
-}
-  if (currentModel?.userData?.path === child.userData.path) return;
-  loadModel(child.userData.path, child.userData.name);
-}
-}
-};
+  const onMenuClick = (ctrl) => {
+    for (const child of menu.children) {
+      const worldPos = child.getWorldPosition(new THREE.Vector3());
+      if (ctrl.position.distanceTo(worldPos) < 0.1) {
+        if (child.userData.toggleInfo) {
+          showInfo = !showInfo;
+          updateInfoVisibility();
+          updateToggleButtonAppearance(child);
+          return;
+        }
+        if (currentModel?.userData?.path === child.userData.path) return;
+        loadModel(child.userData.path, child.userData.name);
+      }
+    }
+  };
 
   // ロード時の制御
   const loadMenuFromCSV = async () => {
@@ -209,8 +220,8 @@ return;
       await loadModel(records[0].path, records[0].name);
     }
 
-    const toggleBtn = createLabelButton("情報表示切替", "#ffaa00");
-    toggleBtn.position.set(-0.3, -0.2, -0.2);
+    const toggleBtn = createLabelButton("情報表示切替", "#cccccc", "#000000");
+    toggleBtn.position.set(0.45, -0.2, -0.2);
     toggleBtn.userData.toggleInfo = true;
     menu.add(toggleBtn);
   };
@@ -223,6 +234,24 @@ return;
       obj.visible = showInfo;
     });
   }
+
+
+function updateToggleButtonAppearance(toggleBtn) {
+const bgColor = showInfo ? "#cccccc" : "#000000"; // グレー or 黒
+const textColor = showInfo ? "#000000" : "#ffffff"; // 黒 or 白
+
+const newBtn = createLabelButton("情報表示切替", bgColor, textColor);
+newBtn.position.copy(toggleBtn.position);
+newBtn.userData = { ...toggleBtn.userData };
+
+const index = menu.children.indexOf(toggleBtn);
+if (index !== -1) {
+menu.children[index] = newBtn;
+} else {
+menu.add(newBtn);
+}
+}
+
 
   // 状態用
   let mesh = null;
