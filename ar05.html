@@ -10,8 +10,8 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
-    APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br>
+<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
+<!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
   </header>
@@ -210,7 +210,7 @@ return;
     }
 
     const toggleBtn = createLabelButton("情報表示切替", "#ffaa00");
-    toggleBtn.position.set(0, -0.2 - totalRows * spacingY, -0.2);
+    toggleBtn.position.set(0, 0.2, -0.2);
     toggleBtn.userData.toggleInfo = true;
     menu.add(toggleBtn);
   };
