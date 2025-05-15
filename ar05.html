@@ -2,16 +2,16 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>AR Lite</title>
+  <title>craftARt Lite</title>
   <meta name="viewport" content="width=device-width">
   <link rel="icon" href="data:">
 </head>
 <body>
   <header>
-    <h1>AR Lite</h1>
-    LIB: <a href="https://github.com/code4fukui/egxr.js/">egxr.js</a>, <a href="https://code4fukui.github.io/vr-lenspark/threeutil.js">threeutil.js</a><br>
-    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu">越前国府発掘プロジェクト</a><br>
-    APP: <a href="https://github.com/nknhb966/artest3/blob/main/ar05.html">src on GitHub</a><br>
+    <h1>craftARt Lite</h1>
+    LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
+    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
+    APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br>
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
   </header>
@@ -50,15 +50,17 @@
   }
 
   // ラベルボタン作成関数
-  const createLabelButton = (text, color = "#44ccff", width = 512, height = 128) => {
+  const createLabelButton = (text, isSelected = false, width = 512, height = 128) => {
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
-    ctx.fillStyle = color;
+
+    ctx.fillStyle = isSelected ? "#4444ff" : "#00ccff"; // 青 or 水色
     ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = "#000000"; // 黒文字（URL）
-    ctx.font = "bold 40px sans-serif";
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "48px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(text, width / 2, height / 2);
@@ -68,6 +70,31 @@
     const geometry = new THREE.PlaneGeometry(0.16, 0.04);
     const mesh = new THREE.Mesh(geometry, material);
     mesh.userData.label = text;
+    return mesh;
+  };
+
+  // リンクボタン作成
+  const createLinkButton = (text, width = 512, height = 128) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#222222";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "40px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, width / 2, height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+    const geometry = new THREE.PlaneGeometry(0.2, 0.05);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.userData.label = text;
+    mesh.userData.isURL = true;
     return mesh;
   };
 
@@ -86,7 +113,7 @@
           return;
         }
         if (currentModel?.userData?.path === child.userData.path) return;
-        loadModel(child.userData.path, child.userData.name);
+        loadModel(child.userData.path, child.userData.name, child.userData.description, child.userData.url);
         return;
       }
     }
@@ -117,7 +144,7 @@
       const selectedIndex = e.target.value;
       const item = records[selectedIndex];
       if (item) {
-        await loadModel(item.path, item.name);
+        await loadModel(item.path, item.name, item.description, item.url);
       }
     });
 
@@ -154,7 +181,7 @@
     });
 
     if (records[0]) {
-      await loadModel(records[0].path, records[0].name);
+      await loadModel(records[0].path, records[0].name, records[0].description, records[0].url);
     }
   };
 
@@ -205,10 +232,11 @@
   let isLoadingModel = false;
 
   // モデルをロードして表示
-  async function loadModel(path, name) {
+  async function loadModel(path, name, description = "", url = "") {
     if (isLoadingModel) return;
     isLoadingModel = true;
 
+    // 既存のモデルとテキスト削除
     if (currentModel) {
       disposeModel(currentModel);
       txts.forEach(t => scene.remove(t));
@@ -217,13 +245,13 @@
     }
 
     const model = await waitLoadGLTF(path);
-    model.userData.path = path;
+    model.userData = { path, name, description, url };
     model.position.set(0, offy - 0.2, -0.5);
     model.scale.set(1, 1, 1);
     scene.add(model);
     currentModel = model;
 
-    // ラベル表示：スケール、モデル名
+    // スケール表示と名前
     const txt1 = createModelText("100%", 0.1);
     const txt2 = createModelText(name, 0.2);
     txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
@@ -232,36 +260,22 @@
     scene.add(txt2);
     txts = [txt1, txt2];
 
-    // CSV上の item を menu.children から探す
-    const selectedItem = Array.from(menu.children).find(c => c.userData.path === path)?.userData;
-
-    // 説明表示
-    if (selectedItem?.description) {
-      const txtDesc = createModelText(selectedItem.description, 0.1);
-      txtDesc.position.set(model.position.x, model.position.y + 0.3, model.position.z);
+    // description（任意）
+    if (description) {
+      const txtDesc = createModelText(description, 0.08);
+      txtDesc.position.set(model.position.x + 0.2, model.position.y, model.position.z);
       scene.add(txtDesc);
       txts.push(txtDesc);
     }
 
-    // URL表示
-    if (selectedItem?.url) {
-      const txtURL = createModelText("リンクはこちら ▶", 0.1);
-      txtURL.position.set(model.position.x, model.position.y + 0.4, model.position.z);
-      txtURL.userData.isURL = true;
-      txtURL.userData.url = selectedItem.url;
-      scene.add(txtURL);
-      txts.push(txtURL);
-    }
-
-    // ボタンの色を更新（選択中＝青、非選択＝水色）
-    for (let i = 0; i < menu.children.length; i++) {
-      const oldBtn = menu.children[i];
-      const isSelected = oldBtn.userData.path === path;
-      const color = isSelected ? "#0000ff" : "#44ccff";
-      const newBtn = createLabelButton(oldBtn.userData.name, color);
-      newBtn.position.copy(oldBtn.position);
-      newBtn.userData = { ...oldBtn.userData }; // path, name, description, url
-      menu.children[i] = newBtn;
+    // url（任意）
+    if (url) {
+      const linkBtn = createLinkButton("リンクはこちら ▶");
+      linkBtn.position.set(model.position.x + 0.2, model.position.y - 0.1, model.position.z);
+      linkBtn.userData.url = url;
+      linkBtn.userData.isURL = true;
+      scene.add(linkBtn);
+      txts.push(linkBtn);
     }
 
     targetPosition.copy(model.position);
@@ -348,7 +362,7 @@
     const intersects = raycaster.intersectObjects(menu.children);
     if (intersects.length > 0) {
       const clicked = intersects[0].object;
-      loadModel(clicked.userData.path, clicked.userData.name);
+      loadModel(clicked.userData.path, clicked.userData.name, clicked.userData.description, clicked.userData.url);
     }
   });
 
