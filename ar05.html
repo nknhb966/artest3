@@ -10,8 +10,8 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
-    APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br>
+<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
+<!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
   </header>
@@ -27,7 +27,7 @@
 
   <script type="module">
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
-  import { initXR, waitLoadGLTF, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
+  import { initXR, waitLoadGLTF, createModelImage, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
   const csvURL = "https://nknhb966.github.io/artest3/models.csv";
 
   // CSVパース関数
@@ -48,6 +48,42 @@
     }
     return result;
   }
+
+  // 長い文字を表示する関数
+  const createModelDescription = (text, w = 1.0, color = "white", size = 64, maxCharsPerLine = 10, parent) => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.font = `${size}px sans-serif`;
+
+    // 文字数で単純に折り返す
+    const lines = [];
+    for (let i = 0; i < text.length; i += maxCharsPerLine) {
+      lines.push(text.substring(i, i + maxCharsPerLine));
+    }
+
+    // キャンバス幅は maxCharsPerLine * フォントサイズ * 比率 (おおよそ)
+    const approxCharWidth = size * 1; // 1文字の幅の目安（調整可）
+    const canvasWidth = approxCharWidth * maxCharsPerLine;
+    const lineHeight = size * 1.2;
+    const canvasHeight = lineHeight * lines.length;
+
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+    ctx.font = `${size}px sans-serif`;
+    ctx.fillStyle = color;
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = size * 0.02;
+
+    for (let i = 0; i < lines.length; i++) {
+      const y = (i + 1) * lineHeight - (size * 0.2);
+      ctx.fillText(lines[i], 0, y);
+      ctx.strokeText(lines[i], 0, y);
+    }
+
+    const h = w / canvas.width * canvas.height;
+    return createModelImage(canvas, w, h, false, parent);
+  };
 
   // ラベルボタン作成関数
   const createLabelButton = (text, color = "#44ccff", width = 512, height = 128) => {
@@ -232,8 +268,8 @@
 
     // 説明表示
     if (selectedItem?.description) {
-      const txtDesc = createModelText(selectedItem.description, 0.15);
-      txtDesc.position.set(model.position.x, model.position.y + 0.3, model.position.z);
+      const txtDesc = createModelDescription(selectedItem.description, 0.3);
+      txtDesc.position.set(model.position.x - 0.3, model.position.y + 0.1, model.position.z);
       scene.add(txtDesc);
       txts.push(txtDesc);
     }
@@ -245,7 +281,7 @@
       const color = isSelected ? "#0000ff" : "#44ccff";
       const newBtn = createLabelButton(oldBtn.userData.name, color);
       newBtn.position.copy(oldBtn.position);
-      newBtn.userData = { ...oldBtn.userData }; // path, name, description, url
+      newBtn.userData = { ...oldBtn.userData };
       menu.children[i] = newBtn;
     }
 
