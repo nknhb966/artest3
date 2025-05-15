@@ -10,8 +10,8 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
-<!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
+    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
+    APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br>
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
   </header>
@@ -71,48 +71,21 @@
     return mesh;
   };
 
-
-const createLinkButton = (text = "リンクはこちら ▶", width = 512, height = 128) => {
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = "#000000"; // 黒背景
-  ctx.fillRect(0, 0, width, height);
-  ctx.fillStyle = "#ffffff"; // 白文字
-  ctx.font = "36px sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, width / 2, height / 2);
-
-  const texture = new THREE.CanvasTexture(canvas);
-  const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-  const geometry = new THREE.PlaneGeometry(0.25, 0.06); // 少し大きめ
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.userData.label = text;
-  return mesh;
-};
-
   const menu = new THREE.Group();
   scene.add(menu);
 
   // モデル操作関連
   let currentModel = null;
 
-const onMenuClick = (ctrl) => {
-  for (const child of menu.children) {
-    const worldPos = child.getWorldPosition(new THREE.Vector3());
-    if (ctrl.position.distanceTo(worldPos) < 0.05) {
-      if (child.userData.isURL && child.userData.url) {
-        window.open(child.userData.url, "_blank");
-        return;
+  const onMenuClick = (ctrl) => {
+    for (const child of menu.children) {
+      const worldPos = child.getWorldPosition(new THREE.Vector3());
+      if (ctrl.position.distanceTo(worldPos) < 0.05) {
+        if (currentModel?.userData?.path === child.userData.path) return;
+        loadModel(child.userData.path, child.userData.name);
       }
-      if (currentModel?.userData?.path === child.userData.path) return;
-      loadModel(child.userData.path, child.userData.name);
     }
-  }
-};
-
+  };
 
   // ロード時の制御
   const loadMenuFromCSV = async () => {
@@ -264,16 +237,6 @@ const onMenuClick = (ctrl) => {
       scene.add(txtDesc);
       txts.push(txtDesc);
     }
-
-    // URL表示
-if (selectedItem?.url) {
-  const linkBtn = createLinkButton("リンクはこちら ▶");
-  linkBtn.position.set(model.position.x, model.position.y + 0.4, model.position.z);
-  linkBtn.userData.isURL = true;
-  linkBtn.userData.url = selectedItem.url;
-  scene.add(linkBtn);
-  txts.push(linkBtn);
-}
 
     // ボタンの色を更新（選択中＝青、非選択＝水色）
     for (let i = 0; i < menu.children.length; i++) {
