@@ -10,8 +10,8 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
-    APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br>
+<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
+<!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
   </header>
@@ -51,16 +51,23 @@
 
   // 長い文字を表示する関数
   const createModelDescription = (text, w = 1.0, color = "white", size = 64, maxCharsPerLine = 15, parent) => {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    ctx.font = `${size}px sans-serif`;
+    const toZenkaku = (str) => {
+      return str.replace(/[A-Za-z0-9!-/:-@¥[-`{-~]/g, (s) =>
+        String.fromCharCode(s.charCodeAt(0) + 0xFEE0)
+      ).replace(/ /g, "　");
+    };
+
+    const zenkakuText = toZenkaku(text);
 
     const lines = [];
-    for (let i = 0; i < text.length; i += maxCharsPerLine) {
-      lines.push(text.substring(i, i + maxCharsPerLine));
+    for (let i = 0; i < zenkakuText.length; i += maxCharsPerLine) {
+      lines.push(zenkakuText.substring(i, i + maxCharsPerLine));
     }
 
-    const approxCharWidth = size * 1;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const approxCharWidth = size;
     const canvasWidth = approxCharWidth * maxCharsPerLine;
     const lineHeight = size * 1.2;
     const canvasHeight = lineHeight * lines.length;
@@ -114,7 +121,7 @@
   const onMenuClick = (ctrl) => {
     for (const child of menu.children) {
       const worldPos = child.getWorldPosition(new THREE.Vector3());
-      if (ctrl.position.distanceTo(worldPos) < 0.05) {
+      if (ctrl.position.distanceTo(worldPos) < 0.1) {
         if (currentModel?.userData?.path === child.userData.path) return;
         loadModel(child.userData.path, child.userData.name);
       }
