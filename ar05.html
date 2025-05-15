@@ -10,7 +10,7 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
+    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
 <!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
@@ -91,46 +91,26 @@
   };
 
   // ラベルボタン作成関数
-  // const createLabelButton = (text, color = "#44ccff", width = 512, height = 128) => {
-  //   const canvas = document.createElement("canvas");
-  //   canvas.width = width;
-  //   canvas.height = height;
-  //   const ctx = canvas.getContext("2d");
-  //   ctx.fillStyle = color;
-  //   ctx.fillRect(0, 0, width, height);
-  //   ctx.fillStyle = "#000000";
-  //   ctx.font = "bold 40px sans-serif";
-  //   ctx.textAlign = "center";
-  //   ctx.textBaseline = "middle";
-  //   ctx.fillText(text, width / 2, height / 2);
+  const createLabelButton = (text, bgColor = "#44ccff", textColor = "#000000", width = 512, height = 128) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = textColor;
+    ctx.font = "bold 40px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, width / 2, height / 2);
 
-  //   const texture = new THREE.CanvasTexture(canvas);
-  //   const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-  //   const geometry = new THREE.PlaneGeometry(0.16, 0.04);
-  //   const mesh = new THREE.Mesh(geometry, material);
-  //   mesh.userData.label = text;
-  //   return mesh;
-  // };
-const createLabelButton = (text, bgColor = "#44ccff", textColor = "#000000", width = 512, height = 128) => {
-const canvas = document.createElement("canvas");
-canvas.width = width;
-canvas.height = height;
-const ctx = canvas.getContext("2d");
-ctx.fillStyle = bgColor;
-ctx.fillRect(0, 0, width, height);
-ctx.fillStyle = textColor;
-ctx.font = "bold 40px sans-serif";
-ctx.textAlign = "center";
-ctx.textBaseline = "middle";
-ctx.fillText(text, width / 2, height / 2);
-
-const texture = new THREE.CanvasTexture(canvas);
-const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-const geometry = new THREE.PlaneGeometry(0.16, 0.04);
-const mesh = new THREE.Mesh(geometry, material);
-mesh.userData.label = text;
-return mesh;
-};
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+    const geometry = new THREE.PlaneGeometry(0.16, 0.04);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.userData.label = text;
+    return mesh;
+  };
 
   const menu = new THREE.Group();
   scene.add(menu);
@@ -236,21 +216,21 @@ return mesh;
   }
 
 
-function updateToggleButtonAppearance(toggleBtn) {
-const bgColor = showInfo ? "#cccccc" : "#000000"; // グレー or 黒
-const textColor = showInfo ? "#000000" : "#ffffff"; // 黒 or 白
+  function updateToggleButtonAppearance(toggleBtn) {
+    const bgColor = showInfo ? "#cccccc" : "#000000"; // グレー or 黒
+    const textColor = showInfo ? "#000000" : "#ffffff"; // 黒 or 白
 
-const newBtn = createLabelButton("情報表示切替", bgColor, textColor);
-newBtn.position.copy(toggleBtn.position);
-newBtn.userData = { ...toggleBtn.userData };
+    const newBtn = createLabelButton("情報表示切替", bgColor, textColor);
+    newBtn.position.copy(toggleBtn.position);
+    newBtn.userData = { ...toggleBtn.userData };
 
-const index = menu.children.indexOf(toggleBtn);
-if (index !== -1) {
-menu.children[index] = newBtn;
-} else {
-menu.add(newBtn);
-}
-}
+    const index = menu.children.indexOf(toggleBtn);
+    if (index !== -1) {
+      menu.children[index] = newBtn;
+    } else {
+      menu.add(newBtn);
+    }
+  }
 
 
   // 状態用
@@ -581,18 +561,34 @@ menu.add(newBtn);
       currentModel.quaternion.slerp(targetQuaternion, easing);
 
       const scalePercent = Math.round(currentModel.scale.x * 100);
-      if (txts[0] && scalePercent !== lastScalePercent) {
-        txts[0].geometry.dispose();
-        scene.remove(txts[0]);
 
-        const newTxt = createModelText(`${scalePercent}%`, 0.1);
+      if (scalePercent !== lastScalePercent) {
+        lastScalePercent = scalePercent;
+
+        if (txts[0]) {
+          txts[0].geometry.dispose();
+          scene.remove(txts[0]);
+          txts[0] = null;
+        }
+
+        // showInfo が true のときだけスケール表示を再作成
+        if (showInfo) {
+          const newTxt = createModelText(`${scalePercent}%`, 0.1);
+          newTxt.position.set(0, offy, -0.5);
+          scene.add(newTxt);
+          txts[0] = newTxt;
+        }
+      }
+
+      // スケール表示の再表示処理（showInfo を true に切り替えたときに必要）
+      if (showInfo && !txts[0]) {
+        const newTxt = createModelText(`${lastScalePercent}%`, 0.1);
         newTxt.position.set(0, offy, -0.5);
         scene.add(newTxt);
         txts[0] = newTxt;
-
-        lastScalePercent = scalePercent;
       }
 
+      // 表示中のテキストはカメラに向け続ける
       txts.forEach(i => i.lookAt(camera.position));
     }
 
@@ -607,6 +603,7 @@ menu.add(newBtn);
 
     renderer.render(scene, camera);
   });
+
 
   </script>
 </body>
