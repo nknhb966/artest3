@@ -10,7 +10,7 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
+<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
 <!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
@@ -561,34 +561,18 @@
       currentModel.quaternion.slerp(targetQuaternion, easing);
 
       const scalePercent = Math.round(currentModel.scale.x * 100);
+      if (txts[0] && scalePercent !== lastScalePercent) {
+        txts[0].geometry.dispose();
+        scene.remove(txts[0]);
 
-      if (scalePercent !== lastScalePercent) {
-        lastScalePercent = scalePercent;
-
-        if (txts[0]) {
-          txts[0].geometry.dispose();
-          scene.remove(txts[0]);
-          txts[0] = null;
-        }
-
-        // showInfo が true のときだけスケール表示を再作成
-        if (showInfo) {
-          const newTxt = createModelText(`${scalePercent}%`, 0.1);
-          newTxt.position.set(0, offy, -0.5);
-          scene.add(newTxt);
-          txts[0] = newTxt;
-        }
-      }
-
-      // スケール表示の再表示処理（showInfo を true に切り替えたときに必要）
-      if (showInfo && !txts[0]) {
-        const newTxt = createModelText(`${lastScalePercent}%`, 0.1);
+        const newTxt = createModelText(`${scalePercent}%`, 0.1);
         newTxt.position.set(0, offy, -0.5);
         scene.add(newTxt);
         txts[0] = newTxt;
+
+        lastScalePercent = scalePercent;
       }
 
-      // 表示中のテキストはカメラに向け続ける
       txts.forEach(i => i.lookAt(camera.position));
     }
 
@@ -603,7 +587,6 @@
 
     renderer.render(scene, camera);
   });
-
 
   </script>
 </body>
