@@ -16,6 +16,7 @@
     <select id="modelSelect"></select>
   </header>
 
+
   <script type="importmap">
   {
     "imports": {
@@ -50,15 +51,15 @@
   }
 
   // ラベルボタン作成関数
-  const createLabelButton = (text, width = 512, height = 128) => {
+  const createLabelButton = (text, color = "#44ccff", width = 512, height = 128) => {
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#4444ff";
+    ctx.fillStyle = color;
     ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "48px sans-serif";
+    ctx.fillStyle = "#000000"; // 黒文字（URL）
+    ctx.font = "bold 40px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(text, width / 2, height / 2);
@@ -84,6 +85,10 @@
         if (currentModel?.userData?.path === child.userData.path) return;
         loadModel(child.userData.path, child.userData.name);
       }
+      if (child.userData.isURL && child.userData.url) {
+        window.open(child.userData.url, "_blank");
+        return;
+      }
     }
   };
 
@@ -104,6 +109,7 @@
       const option = document.createElement("option");
       option.value = index;
       option.textContent = item.name;
+
       modelSelect.appendChild(option);
     });
 
@@ -128,7 +134,9 @@
       const btn = createLabelButton(item.name);
       btn.userData.path = item.path;
       btn.userData.name = item.name;
-    
+      btn.userData.description = item.description;
+      btn.userData.url = item.url;
+
       const row = Math.floor(i / itemsPerRow);
       const indexInRow = i % itemsPerRow;
       
@@ -215,13 +223,46 @@
     scene.add(model);
     currentModel = model;
 
-    let txt1 = createModelText("100%", 0.1);
-    let txt2 = createModelText(name, 0.2);
+    // ラベル表示：スケール、モデル名
+    const txt1 = createModelText("100%", 0.1);
+    const txt2 = createModelText(name, 0.2);
     txt1.position.set(model.position.x, model.position.y + 0.2, model.position.z);
     txt2.position.set(model.position.x + 0.2, model.position.y + 0.1, model.position.z);
     scene.add(txt1);
     scene.add(txt2);
     txts = [txt1, txt2];
+
+    // CSV上の item を menu.children から探す
+    const selectedItem = Array.from(menu.children).find(c => c.userData.path === path)?.userData;
+
+    // 説明表示
+    if (selectedItem?.description) {
+      const txtDesc = createModelText(selectedItem.description, 0.1);
+      txtDesc.position.set(model.position.x, model.position.y + 0.3, model.position.z);
+      scene.add(txtDesc);
+      txts.push(txtDesc);
+    }
+
+    // URL表示
+    if (selectedItem?.url) {
+      const txtURL = createModelText("リンクはこちら ▶", 0.1);
+      txtURL.position.set(model.position.x, model.position.y + 0.4, model.position.z);
+      txtURL.userData.isURL = true;
+      txtURL.userData.url = selectedItem.url;
+      scene.add(txtURL);
+      txts.push(txtURL);
+    }
+
+    // ボタンの色を更新（選択中＝青、非選択＝水色）
+    for (let i = 0; i < menu.children.length; i++) {
+      const oldBtn = menu.children[i];
+      const isSelected = oldBtn.userData.path === path;
+      const color = isSelected ? "#0000ff" : "#44ccff";
+      const newBtn = createLabelButton(oldBtn.userData.name, color);
+      newBtn.position.copy(oldBtn.position);
+      newBtn.userData = { ...oldBtn.userData }; // path, name, description, url
+      menu.children[i] = newBtn;
+    }
 
     targetPosition.copy(model.position);
     targetScale.set(1, 1, 1);
