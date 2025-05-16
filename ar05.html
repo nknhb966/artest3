@@ -10,7 +10,7 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
+    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
 <!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
@@ -28,7 +28,7 @@
   <script type="module">
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelImage, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
-  const csvURL = "./models.csv";
+  const csvURL = "https://nknhb966.github.io/artest3/models.csv";
 
   // CSVパース関数
   function parseCSV(csvData) {
@@ -174,6 +174,14 @@
     const totalRows = Math.ceil(total / itemsPerRow);
     
     records.forEach((item, i) => {
+      const oldBtn = menu.children[i];
+      if (oldBtn && oldBtn.material) {
+        if (oldBtn.material.map) oldBtn.material.map.dispose();
+        oldBtn.material.dispose();
+        if (oldBtn.geometry) oldBtn.geometry.dispose();
+        menu.remove(oldBtn);
+      }
+
       const btn = createLabelButton(item.name);
       btn.userData.path = item.path;
       btn.userData.name = item.name;
@@ -188,8 +196,7 @@
         : itemsPerRow;
     
       const offsetX = (itemsInThisRow - 1) / 2;
-      btn.position.x = (indexInRow - offsetX) * spacingX;
-    
+      btn.position.x = (indexInRow - offsetX) * spacingX;    
       btn.position.y = -0.3 - row * spacingY;
       btn.position.z = -0.2;
     
@@ -201,6 +208,12 @@
     }
 
     const toggleBtn = createLabelButton("情報表示切替", "#cccccc", "#000000");
+    if (toggleBtn.material) {
+      if (toggleBtn.material.map) toggleBtn.material.map.dispose();
+      toggleBtn.material.dispose();
+    }
+    if (toggleBtn.geometry) toggleBtn.geometry.dispose();
+    menu.remove(toggleBtn);
     toggleBtn.position.set(0.4, -0.1, -0.2);
     toggleBtn.userData.toggleInfo = true;
     menu.add(toggleBtn);
@@ -215,21 +228,28 @@
     });
   }
 
-  function updateToggleButtonAppearance(toggleBtn) {
-    const bgColor = showInfo ? "#cccccc" : "#000000"; // グレー or 黒
-    const textColor = showInfo ? "#000000" : "#ffffff"; // 黒 or 白
+function updateToggleButtonAppearance(toggleBtn) {
+  const bgColor = showInfo ? "#cccccc" : "#000000"; // グレー or 黒
+  const textColor = showInfo ? "#000000" : "#ffffff"; // 黒 or 白
 
-    const newBtn = createLabelButton("情報表示切替", bgColor, textColor);
-    newBtn.position.copy(toggleBtn.position);
-    newBtn.userData = { ...toggleBtn.userData };
+  const newBtn = createLabelButton("情報表示切替", bgColor, textColor);
+  newBtn.position.copy(toggleBtn.position);
+  newBtn.userData = { ...toggleBtn.userData };
 
-    const index = menu.children.indexOf(toggleBtn);
-    if (index !== -1) {
-      menu.children[index] = newBtn;
-    } else {
-      menu.add(newBtn);
+  const index = menu.children.indexOf(toggleBtn);
+  if (index !== -1) {
+    if (toggleBtn.material) {
+      if (toggleBtn.material.map) toggleBtn.material.map.dispose();
+      toggleBtn.material.dispose();
     }
+    if (toggleBtn.geometry) toggleBtn.geometry.dispose();
+
+    menu.remove(toggleBtn);
   }
+
+  menu.add(newBtn);
+}
+
 
   // 状態用
   let mesh = null;
@@ -315,16 +335,32 @@
     }
 
     // ボタンの色を更新（選択中＝青、非選択＝水色）
-    for (let i = 0; i < menu.children.length; i++) {
-      const oldBtn = menu.children[i];
-      if (!oldBtn.userData.path) continue; // 情報切替などモデルでないボタンは無視
-      const isSelected = oldBtn.userData.path === path;
-      const color = isSelected ? "#0000ff" : "#44ccff";
-      const newBtn = createLabelButton(oldBtn.userData.name, color);
-      newBtn.position.copy(oldBtn.position);
-      newBtn.userData = { ...oldBtn.userData };
-      menu.children[i] = newBtn;
-    }
+for (let i = 0; i < menu.children.length; i++) {
+  const oldBtn = menu.children[i];
+  if (!oldBtn.userData.path) continue; // 情報切替などモデルでないボタンは無視
+  const isSelected = oldBtn.userData.path === path;
+  const color = isSelected ? "#0000ff" : "#44ccff";
+
+  const newBtn = createLabelButton(oldBtn.userData.name, color);
+  newBtn.position.copy(oldBtn.position);
+  newBtn.userData = { ...oldBtn.userData };
+
+  // 古いボタンのリソースを解放
+  if (oldBtn.material) {
+    if (oldBtn.material.map) oldBtn.material.map.dispose();
+    oldBtn.material.dispose();
+  }
+  if (oldBtn.geometry) {
+    oldBtn.geometry.dispose();
+  }
+
+  // シーンから古いボタンを削除し、新しいボタンを追加
+  menu.remove(oldBtn);
+  menu.add(newBtn);
+
+  // i を調整する必要はなし（removeはchildren配列に影響するが、addで補完される）
+}
+
 
     targetPosition.copy(model.position);
     targetScale.set(1, 1, 1);
