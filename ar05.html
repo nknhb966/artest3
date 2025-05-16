@@ -10,7 +10,7 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
+<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
 <!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
@@ -256,8 +256,8 @@
     // ラベル表示：スケール、モデル名
     const txt1 = createModelText("100%", 0.1);
     const txt2 = createModelText(name, 0.2);
-    txt1.position.set(model.position.x, offy + 0.2, model.position.z);
-    txt2.position.set(model.position.x + 0.2, offy + 0.1, model.position.z);
+    txt1.position.set(model.position.x, offy, model.position.z);
+    txt2.position.set(model.position.x + 0.2, offy - 0.1, model.position.z);
     scene.add(txt1);
     scene.add(txt2);
     txts = [txt1, txt2];
@@ -268,7 +268,7 @@
     // 説明表示
     if (selectedItem?.description) {
       const txtDesc = createModelDescription(selectedItem.description, 0.5);
-      txtDesc.position.set(model.position.x - 0.4, model.position.y + 0.1, model.position.z);
+      txtDesc.position.set(model.position.x - 0.4, offy - 0.1, model.position.z);
       scene.add(txtDesc);
       txts.push(txtDesc);
     }
