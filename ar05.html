@@ -10,7 +10,7 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
+<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
 <!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
@@ -335,17 +335,17 @@ function updateToggleButtonAppearance(toggleBtn) {
     }
 
     // ボタンの色を更新（選択中＝青、非選択＝水色）
-for (let i = 0; i < menu.children.length; i++) {
-  const oldBtn = menu.children[i];
-  if (!oldBtn.userData.path) continue; // 情報切替などモデルでないボタンは無視
+const oldButtons = menu.children.slice(); // コピーを作る
+
+oldButtons.forEach((oldBtn) => {
+  if (!oldBtn.userData.path) return; // モデル以外は無視
   const isSelected = oldBtn.userData.path === path;
   const color = isSelected ? "#0000ff" : "#44ccff";
-
   const newBtn = createLabelButton(oldBtn.userData.name, color);
   newBtn.position.copy(oldBtn.position);
   newBtn.userData = { ...oldBtn.userData };
 
-  // 古いボタンのリソースを解放
+  // 古いボタンのリソース解放
   if (oldBtn.material) {
     if (oldBtn.material.map) oldBtn.material.map.dispose();
     oldBtn.material.dispose();
@@ -354,12 +354,9 @@ for (let i = 0; i < menu.children.length; i++) {
     oldBtn.geometry.dispose();
   }
 
-  // シーンから古いボタンを削除し、新しいボタンを追加
   menu.remove(oldBtn);
   menu.add(newBtn);
-
-  // i を調整する必要はなし（removeはchildren配列に影響するが、addで補完される）
-}
+});
 
 
     targetPosition.copy(model.position);
