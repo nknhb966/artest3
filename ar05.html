@@ -10,7 +10,7 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
+    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
 <!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
@@ -125,7 +125,8 @@
       if (ctrl.position.distanceTo(worldPos) < 0.08) {
         if (child.userData.toggleInfo) {
           showInfo = !showInfo;
-          toggleInfoDisplay(child);
+          updateInfoVisibility();
+          updateToggleButtonAppearance(child);
           return;
         }
         if (currentModel?.userData?.path === child.userData.path) return;
@@ -221,13 +222,13 @@
   loadMenuFromCSV();
 
   // 情報表示切替
-  function toggleInfoDisplay(toggleBtn) {
-    showInfo = !showInfo;
-
+  function updateInfoVisibility() {
     txts.forEach(obj => {
       obj.visible = showInfo;
     });
+  }
 
+  function updateToggleButtonAppearance(toggleBtn) {
     const bgColor = showInfo ? "#000000" : "#cccccc";
     const textColor = showInfo ? "#ffffff" : "#000000";
 
@@ -426,6 +427,7 @@
       lastDirection = null;
     };
     isLoadingModel = false;
+    updateInfoVisibility();
   }
 
 
