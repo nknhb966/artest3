@@ -125,8 +125,7 @@
       if (ctrl.position.distanceTo(worldPos) < 0.08) {
         if (child.userData.toggleInfo) {
           showInfo = !showInfo;
-          updateInfoVisibility();
-          updateToggleButtonAppearance(child);
+          toggleInfoDisplay(child);
           return;
         }
         if (currentModel?.userData?.path === child.userData.path) return;
@@ -164,7 +163,7 @@
       }
     });
 
-    // AR内でモデル選択
+    // ARモードでモデル選択
     menu.clear();
     const spacingX = 0.2;
     const spacingY = 0.1;
@@ -207,7 +206,7 @@
       await loadModel(records[0].path, records[0].name);
     }
 
-    const toggleBtn = createLabelButton("情報表示切替", "#cccccc", "#000000");
+    const toggleBtn = createLabelButton("情報表示切替", "#000000", "#cccccc");
     if (toggleBtn.material) {
       if (toggleBtn.material.map) toggleBtn.material.map.dispose();
       toggleBtn.material.dispose();
@@ -219,37 +218,36 @@
     menu.add(toggleBtn);
   };
 
-
   loadMenuFromCSV();
 
-  function updateInfoVisibility() {
+  // 情報表示切替
+  function toggleInfoDisplay(toggleBtn) {
+    showInfo = !showInfo;
+
     txts.forEach(obj => {
       obj.visible = showInfo;
     });
-  }
 
-function updateToggleButtonAppearance(toggleBtn) {
-  const bgColor = showInfo ? "#cccccc" : "#000000"; // グレー or 黒
-  const textColor = showInfo ? "#000000" : "#ffffff"; // 黒 or 白
+    const bgColor = showInfo ? "#000000" : "#cccccc";
+    const textColor = showInfo ? "#ffffff" : "#000000";
 
-  const newBtn = createLabelButton("情報表示切替", bgColor, textColor);
-  newBtn.position.copy(toggleBtn.position);
-  newBtn.userData = { ...toggleBtn.userData };
+    const newBtn = createLabelButton("情報表示切替", bgColor, textColor);
+    newBtn.position.copy(toggleBtn.position);
+    newBtn.userData = { ...toggleBtn.userData };
 
-  const index = menu.children.indexOf(toggleBtn);
-  if (index !== -1) {
-    if (toggleBtn.material) {
-      if (toggleBtn.material.map) toggleBtn.material.map.dispose();
-      toggleBtn.material.dispose();
+    const index = menu.children.indexOf(toggleBtn);
+    if (index !== -1) {
+      if (toggleBtn.material) {
+        if (toggleBtn.material.map) toggleBtn.material.map.dispose();
+        toggleBtn.material.dispose();
+      }
+      if (toggleBtn.geometry) toggleBtn.geometry.dispose();
+
+      menu.remove(toggleBtn);
     }
-    if (toggleBtn.geometry) toggleBtn.geometry.dispose();
 
-    menu.remove(toggleBtn);
+    menu.add(newBtn);
   }
-
-  menu.add(newBtn);
-}
-
 
   // 状態用
   let mesh = null;
@@ -335,34 +333,33 @@ function updateToggleButtonAppearance(toggleBtn) {
     }
 
     // ボタンの色を更新（選択中＝青、非選択＝水色）
-const oldButtons = menu.children.slice(); // コピーを作る
+    const oldButtons = menu.children.slice();
 
-oldButtons.forEach((oldBtn) => {
-  if (!oldBtn.userData.path) return; // モデル以外は無視
-  const isSelected = oldBtn.userData.path === path;
-  const color = isSelected ? "#0000ff" : "#44ccff";
-  const newBtn = createLabelButton(oldBtn.userData.name, color);
-  newBtn.position.copy(oldBtn.position);
-  newBtn.userData = { ...oldBtn.userData };
+    oldButtons.forEach((oldBtn) => {
+      if (!oldBtn.userData.path) return;
+      const isSelected = oldBtn.userData.path === path;
+      const color = isSelected ? "#0000ff" : "#44ccff";
+      const newBtn = createLabelButton(oldBtn.userData.name, color);
+      newBtn.position.copy(oldBtn.position);
+      newBtn.userData = { ...oldBtn.userData };
 
-  // 古いボタンのリソース解放
-  if (oldBtn.material) {
-    if (oldBtn.material.map) oldBtn.material.map.dispose();
-    oldBtn.material.dispose();
-  }
-  if (oldBtn.geometry) {
-    oldBtn.geometry.dispose();
-  }
+      if (oldBtn.material) {
+        if (oldBtn.material.map) oldBtn.material.map.dispose();
+        oldBtn.material.dispose();
+      }
+      if (oldBtn.geometry) {
+        oldBtn.geometry.dispose();
+      }
 
-  menu.remove(oldBtn);
-  menu.add(newBtn);
-});
-
+      menu.remove(oldBtn);
+      menu.add(newBtn);
+    });
 
     targetPosition.copy(model.position);
     targetScale.set(1, 1, 1);
     targetQuaternion.copy(model.quaternion);
 
+    // アニメーション設定
     model.animate = () => {
       const selectedCtrls = ctrls.filter(c => c.selected);
 
@@ -429,7 +426,6 @@ oldButtons.forEach((oldBtn) => {
       lastDirection = null;
     };
     isLoadingModel = false;
-    updateInfoVisibility();
   }
 
 
@@ -491,7 +487,6 @@ oldButtons.forEach((oldBtn) => {
       targetPosition.x += normDX * moveFactor;
       targetPosition.y -= normDY * moveFactor;
     }
-
     lastMousePos = { x: e.clientX, y: e.clientY };
   });
 
