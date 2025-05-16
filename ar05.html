@@ -10,7 +10,7 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
+    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
 <!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
@@ -171,7 +171,7 @@
   };
 
 
-  // ◎5. 情報表示関連
+  // ◎5. 情報表示、アニメーション制御関連
   // 情報表示のON/OFFを反映する関数
   function updateInfoVisibility() {
     txts.forEach(obj => {
@@ -200,10 +200,10 @@
     menu.add(newBtn);
   }
 
-  
+  // アニメーション切替ボタンの見た目を更新する関数
   function updateAnimationToggleButtonAppearance(toggleBtn) {
-    const bgColor = isAnimationEnabled ? "#ffcccc" : "#cccccc"; // ON時は薄い赤、OFF時はグレー
-    const textColor = isAnimationEnabled ? "#ff0000" : "#333333"; // ON時は赤文字、OFF時は暗め文字
+    const bgColor = isAnimationEnabled ? "#ffcccc" : "#cccccc";
+    const textColor = isAnimationEnabled ? "#ff0000" : "#333333";
 
     const newBtn = createLabelButton("アニメーション", bgColor, textColor);
     newBtn.position.copy(toggleBtn.position);
@@ -441,33 +441,27 @@
     }
     if (toggleBtn.geometry) toggleBtn.geometry.dispose();
     menu.remove(toggleBtn);
-    toggleBtn.position.set(0.4, -0.1, -0.2);
+    toggleBtn.position.set(-0.4, -0.1, -0.2);
     toggleBtn.userData.toggleInfo = true;
     menu.add(toggleBtn);
 
-    const animToggleBtn = createLabelButton("アニメーション：ON", "#ffcccc", "#ff0000");
+    const animToggleBtn = createLabelButton("アニメーション", "#ffcccc", "#ff0000");
     if (animToggleBtn.material) {
       if (animToggleBtn.material.map) animToggleBtn.material.map.dispose();
       animToggleBtn.material.dispose();
     }
     if (animToggleBtn.geometry) animToggleBtn.geometry.dispose();
     menu.remove(animToggleBtn);
-    animToggleBtn.position.set(0.4, -0.2, -0.2);
+    animToggleBtn.position.set(-0.4, -0.2, -0.2);
     animToggleBtn.userData.toggleAnimation = true;
     menu.add(animToggleBtn);
-
-    // animToggleBtn.addEventListener("select", () => {
-    //   isAnimationEnabled = !isAnimationEnabled;
-    //   animToggleBtn.children[0].element.textContent = `アニメーション：${isAnimationEnabled ? "ON" : "OFF"}`;
-    // });
-
   };
 
   loadMenuFromCSV();
 
 
   // ◎8. コントローラ処理
-  // コントローラの選択処理（モデルロードや情報切り替え）
+  // コントローラの選択処理（モデルロードや情報、アニメーション切り替え）
   const onMenuClick = (ctrl) => {
     for (const child of menu.children) {
       const worldPos = child.getWorldPosition(new THREE.Vector3());
