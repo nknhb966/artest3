@@ -10,7 +10,7 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
+<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
 <!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
@@ -26,11 +26,42 @@
   </script>
 
   <script type="module">
+  // ◎1. import + Three.js 初期化
   import { THREE, scene, camera, renderer, ctrls } from "https://code4fukui.github.io/egxr.js/egxr.js";
   import { initXR, waitLoadGLTF, createModelImage, createModelText, isVisionPro } from "https://code4fukui.github.io/vr-lenspark/threeutil.js";
-  const csvURL = "https://nknhb966.github.io/artest3/models.csv";
 
-  // CSVパース関数
+  // ◎2. 定数 / グローバル状態
+  // === 定数 ===
+  const csvURL = "https://nknhb966.github.io/artest3/models.csv";
+  const easing = 0.1;
+  const offy = isVisionPro() ? 0.6 : 0;
+
+  // === グローバル状態 ===
+  let currentModel = null;
+  let showInfo = true;
+  let mesh = null;
+  let txts = [];
+  let isScaling = false;
+  let isRotating = false;
+  let initialDistance = null;
+  let initialScale = 1;
+  let lastCenterPos = null;
+  let lastCtrlPos = null;
+  let lastDirection = null;
+  let isLoadingModel = false;
+  let lastScalePercent = 100;
+
+  // === Three.js シーン構築用 ===
+  const menu = new THREE.Group();
+  scene.add(menu);
+
+  let targetPosition = new THREE.Vector3();
+  let targetScale = new THREE.Vector3(1, 1, 1);
+  let targetQuaternion = new THREE.Quaternion();
+
+
+  // ◎3. ユーティリティ関数
+  // CSVデータをオブジェクト配列に変換する関数
   function parseCSV(csvData) {
     const lines = csvData.split('\n');
     const result = [];
@@ -49,7 +80,55 @@
     return result;
   }
 
-  // 長い文字を表示する関数
+  // マテリアルとそのテクスチャを破棄する関数
+  function disposeMaterial(material) {
+    if (Array.isArray(material)) {
+      material.forEach(m => {
+        if (m.map) m.map.dispose();
+        m.dispose();
+      });
+    } else {
+      if (material.map) material.map.dispose();
+      material.dispose();
+    }
+  }
+
+  // モデル全体を破棄する関数（メッシュ・ジオメトリ・マテリアル）
+  function disposeModel(model) {
+    model.traverse(child => {
+      if (child.isMesh) {
+        child.geometry?.dispose();
+        disposeMaterial(child.material);
+      }
+    });
+    scene.remove(model);
+  }
+
+
+  // ◎4. UI生成系
+  // ボタン風のテキスト画像を生成し、Three.jsの平面オブジェクトを返す関数
+  const createLabelButton = (text, bgColor = "#44ccff", textColor = "#000000", width = 512, height = 128) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = textColor;
+    ctx.font = "bold 40px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, width / 2, height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+    const geometry = new THREE.PlaneGeometry(0.16, 0.04);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.userData.label = text;
+    return mesh;
+  };
+
+  // モデル説明テキストの画像を生成する関数（全角・複数行対応）
   const createModelDescription = (text, w = 1.0, color = "white", size = 64, maxCharsPerLine = 15, parent) => {
     const toZenkaku = (str) => {
       return str.replace(/[A-Za-z0-9!-/:-@¥[-`{-~]/g, (s) =>
@@ -90,144 +169,16 @@
     return createModelImage(canvas, w, h, false, parent);
   };
 
-  // ラベルボタン作成関数
-  const createLabelButton = (text, bgColor = "#44ccff", textColor = "#000000", width = 512, height = 128) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = textColor;
-    ctx.font = "bold 40px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(text, width / 2, height / 2);
 
-    const texture = new THREE.CanvasTexture(canvas);
-    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-    const geometry = new THREE.PlaneGeometry(0.16, 0.04);
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.userData.label = text;
-    return mesh;
-  };
-
-  const menu = new THREE.Group();
-  scene.add(menu);
-
-  // モデル操作関連
-  let currentModel = null;
-  let showInfo = true;
-
-  const onMenuClick = (ctrl) => {
-    for (const child of menu.children) {
-      const worldPos = child.getWorldPosition(new THREE.Vector3());
-      if (ctrl.position.distanceTo(worldPos) < 0.08) {
-        if (child.userData.toggleInfo) {
-          showInfo = !showInfo;
-          updateInfoVisibility();
-          updateToggleButtonAppearance(child);
-          return;
-        }
-        if (currentModel?.userData?.path === child.userData.path) return;
-        loadModel(child.userData.path, child.userData.name);
-      }
-    }
-  };
-
-  // ロード時の制御
-  const loadMenuFromCSV = async () => {
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-    scene.add(ambientLight);
-
-    const res = await fetch(csvURL);
-    const text = await res.text();
-    const records = parseCSV(text);
-
-    // ブラウザモードでモデル選択
-    const modelSelect = document.getElementById("modelSelect");
-    modelSelect.innerHTML = "";
-
-    records.forEach((item, index) => {
-      const option = document.createElement("option");
-      option.value = index;
-      option.textContent = item.name;
-
-      modelSelect.appendChild(option);
-    });
-
-    modelSelect.addEventListener("change", async (e) => {
-      const selectedIndex = e.target.value;
-      const item = records[selectedIndex];
-      if (item) {
-        await loadModel(item.path, item.name);
-      }
-    });
-
-    // ARモードでモデル選択
-    menu.clear();
-    const spacingX = 0.2;
-    const spacingY = 0.1;
-    const itemsPerRow = 5;
-    
-    const total = records.length;
-    const totalRows = Math.ceil(total / itemsPerRow);
-    
-    records.forEach((item, i) => {
-      const oldBtn = menu.children[i];
-      if (oldBtn && oldBtn.material) {
-        if (oldBtn.material.map) oldBtn.material.map.dispose();
-        oldBtn.material.dispose();
-        if (oldBtn.geometry) oldBtn.geometry.dispose();
-        menu.remove(oldBtn);
-      }
-
-      const btn = createLabelButton(item.name);
-      btn.userData.path = item.path;
-      btn.userData.name = item.name;
-      btn.userData.description = item.description;
-      btn.userData.url = item.url;
-
-      const row = Math.floor(i / itemsPerRow);
-      const indexInRow = i % itemsPerRow;
-      
-      const itemsInThisRow = (row === totalRows - 1 && total % itemsPerRow !== 0)
-        ? total % itemsPerRow
-        : itemsPerRow;
-    
-      const offsetX = (itemsInThisRow - 1) / 2;
-      btn.position.x = (indexInRow - offsetX) * spacingX;    
-      btn.position.y = -0.3 - row * spacingY;
-      btn.position.z = -0.2;
-    
-      menu.add(btn);
-    });
-
-    if (records[0]) {
-      await loadModel(records[0].path, records[0].name);
-    }
-
-    const toggleBtn = createLabelButton("情報表示切替", "#000000", "#cccccc");
-    if (toggleBtn.material) {
-      if (toggleBtn.material.map) toggleBtn.material.map.dispose();
-      toggleBtn.material.dispose();
-    }
-    if (toggleBtn.geometry) toggleBtn.geometry.dispose();
-    menu.remove(toggleBtn);
-    toggleBtn.position.set(0.4, -0.1, -0.2);
-    toggleBtn.userData.toggleInfo = true;
-    menu.add(toggleBtn);
-  };
-
-  loadMenuFromCSV();
-
-  // 情報表示切替
+  // ◎5. 情報表示関連
+  // 情報表示のON/OFFを反映する関数
   function updateInfoVisibility() {
     txts.forEach(obj => {
       obj.visible = showInfo;
     });
   }
 
+  // 情報表示切替ボタンの見た目を更新する関数
   function updateToggleButtonAppearance(toggleBtn) {
     const bgColor = showInfo ? "#000000" : "#cccccc";
     const textColor = showInfo ? "#ffffff" : "#000000";
@@ -243,58 +194,14 @@
         toggleBtn.material.dispose();
       }
       if (toggleBtn.geometry) toggleBtn.geometry.dispose();
-
       menu.remove(toggleBtn);
     }
-
     menu.add(newBtn);
   }
 
-  // 状態用
-  let mesh = null;
-  let txts = [];
-  let isScaling = false;
-  let isRotating = false;
-  let initialDistance = null;
-  let initialScale = 1;
-  let lastCenterPos = null;
-  let lastCtrlPos = null;
-  let lastDirection = null;
 
-  // イージング
-  const easing = 0.1;
-  let targetPosition = new THREE.Vector3();
-  let targetScale = new THREE.Vector3(1, 1, 1);
-  let targetQuaternion = new THREE.Quaternion();
-
-  const offy = isVisionPro() ? 0.6 : 0;
-
-  // マテリアルの破棄
-  function disposeMaterial(material) {
-    if (Array.isArray(material)) {
-      material.forEach(m => {
-        if (m.map) m.map.dispose();
-        m.dispose();
-      });
-    } else {
-      if (material.map) material.map.dispose();
-      material.dispose();
-    }
-  }
-
-  function disposeModel(model) {
-    model.traverse(child => {
-      if (child.isMesh) {
-        child.geometry?.dispose();
-        disposeMaterial(child.material);
-      }
-    });
-    scene.remove(model);
-  }
-
-  let isLoadingModel = false;
-
-  // モデルをロードして表示
+  // ◎6. モデルロード・初期化
+  // 指定パスのGLTFモデルを読み込み、シーンに配置・操作を設定する関数
   async function loadModel(path, name) {
     if (isLoadingModel) return;
     isLoadingModel = true;
@@ -429,6 +336,113 @@
     isLoadingModel = false;
     updateInfoVisibility();
   }
+
+
+  // ◎7. メニュー生成・選択
+  // CSVを読み込んでメニューを構築・モデルを選択可能にする関数
+  const loadMenuFromCSV = async () => {
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+    scene.add(ambientLight);
+
+    const res = await fetch(csvURL);
+    const text = await res.text();
+    const records = parseCSV(text);
+
+    // ブラウザモードでモデル選択
+    const modelSelect = document.getElementById("modelSelect");
+    modelSelect.innerHTML = "";
+
+    records.forEach((item, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = item.name;
+
+      modelSelect.appendChild(option);
+    });
+
+    modelSelect.addEventListener("change", async (e) => {
+      const selectedIndex = e.target.value;
+      const item = records[selectedIndex];
+      if (item) {
+        await loadModel(item.path, item.name);
+      }
+    });
+
+    // ARモードでモデル選択
+    menu.clear();
+    const spacingX = 0.2;
+    const spacingY = 0.1;
+    const itemsPerRow = 5;
+    
+    const total = records.length;
+    const totalRows = Math.ceil(total / itemsPerRow);
+    
+    records.forEach((item, i) => {
+      const oldBtn = menu.children[i];
+      if (oldBtn && oldBtn.material) {
+        if (oldBtn.material.map) oldBtn.material.map.dispose();
+        oldBtn.material.dispose();
+        if (oldBtn.geometry) oldBtn.geometry.dispose();
+        menu.remove(oldBtn);
+      }
+
+      const btn = createLabelButton(item.name);
+      btn.userData.path = item.path;
+      btn.userData.name = item.name;
+      btn.userData.description = item.description;
+      btn.userData.url = item.url;
+
+      const row = Math.floor(i / itemsPerRow);
+      const indexInRow = i % itemsPerRow;
+      
+      const itemsInThisRow = (row === totalRows - 1 && total % itemsPerRow !== 0)
+        ? total % itemsPerRow
+        : itemsPerRow;
+    
+      const offsetX = (itemsInThisRow - 1) / 2;
+      btn.position.x = (indexInRow - offsetX) * spacingX;    
+      btn.position.y = -0.3 - row * spacingY;
+      btn.position.z = -0.2;
+    
+      menu.add(btn);
+    });
+
+    if (records[0]) {
+      await loadModel(records[0].path, records[0].name);
+    }
+
+    const toggleBtn = createLabelButton("情報表示切替", "#000000", "#cccccc");
+    if (toggleBtn.material) {
+      if (toggleBtn.material.map) toggleBtn.material.map.dispose();
+      toggleBtn.material.dispose();
+    }
+    if (toggleBtn.geometry) toggleBtn.geometry.dispose();
+    menu.remove(toggleBtn);
+    toggleBtn.position.set(0.4, -0.1, -0.2);
+    toggleBtn.userData.toggleInfo = true;
+    menu.add(toggleBtn);
+  };
+
+  loadMenuFromCSV();
+
+
+  // ◎8. コントローラ処理
+  // コントローラの選択処理（モデルロードや情報切り替え）
+  const onMenuClick = (ctrl) => {
+    for (const child of menu.children) {
+      const worldPos = child.getWorldPosition(new THREE.Vector3());
+      if (ctrl.position.distanceTo(worldPos) < 0.08) {
+        if (child.userData.toggleInfo) {
+          showInfo = !showInfo;
+          updateInfoVisibility();
+          updateToggleButtonAppearance(child);
+          return;
+        }
+        if (currentModel?.userData?.path === child.userData.path) return;
+        loadModel(child.userData.path, child.userData.name);
+      }
+    }
+  };
 
 
   // === スマホ・PC用 ===
@@ -578,9 +592,7 @@
   });
 
 
-  // メインループ
-  let lastScalePercent = 100;
-
+  // （共通）メインループ
   renderer.setAnimationLoop(() => {
     if (currentModel) {
       currentModel.animate();
