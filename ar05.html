@@ -12,7 +12,7 @@
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
 <!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
 <!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
-    <label for="modelSelect">モデルを選択、：</label>
+    <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
   </header>
 
@@ -317,17 +317,13 @@
     // ボタンの色を更新（選択中＝青、非選択＝水色）
 for (let i = 0; i < menu.children.length; i++) {
   const oldBtn = menu.children[i];
-  if (!oldBtn.userData.path) continue; // トグルボタンなど無視
-
+  if (!oldBtn.userData.path) continue; // 情報切替などモデルでないボタンは無視
   const isSelected = oldBtn.userData.path === path;
   const color = isSelected ? "#0000ff" : "#44ccff";
   const newBtn = createLabelButton(oldBtn.userData.name, color);
   newBtn.position.copy(oldBtn.position);
   newBtn.userData = { ...oldBtn.userData };
-
-  scene.remove(oldBtn);     // ← 既存ボタンを削除
-  menu.remove(oldBtn);      // ← menuから削除
-  menu.add(newBtn);         // ← 新しいボタンを追加
+  menu.children[i] = newBtn;
 }
 
     targetPosition.copy(model.position);
