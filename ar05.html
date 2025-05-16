@@ -215,23 +215,18 @@
     });
   }
 
+function updateToggleButtonAppearance(toggleBtn) {
+  const bgColor = showInfo ? "#cccccc" : "#000000"; // グレー or 黒
+  const textColor = showInfo ? "#000000" : "#ffffff"; // 黒 or 白
 
-  function updateToggleButtonAppearance(toggleBtn) {
-    const bgColor = showInfo ? "#cccccc" : "#000000"; // グレー or 黒
-    const textColor = showInfo ? "#000000" : "#ffffff"; // 黒 or 白
+  const newBtn = createLabelButton("情報表示切替", bgColor, textColor);
+  newBtn.position.copy(toggleBtn.position);
+  newBtn.userData = { ...toggleBtn.userData };
 
-    const newBtn = createLabelButton("情報表示切替", bgColor, textColor);
-    newBtn.position.copy(toggleBtn.position);
-    newBtn.userData = { ...toggleBtn.userData };
-
-    const index = menu.children.indexOf(toggleBtn);
-    if (index !== -1) {
-      menu.children[index] = newBtn;
-    } else {
-      menu.add(newBtn);
-    }
-  }
-
+  // 古いボタンを削除して、新しいボタンを追加
+  menu.remove(toggleBtn);
+  menu.add(newBtn);
+}
 
   // 状態用
   let mesh = null;
