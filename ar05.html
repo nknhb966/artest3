@@ -10,7 +10,7 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
+    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
 <!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
@@ -32,7 +32,7 @@
 
   // ◎2. 定数 / グローバル状態
   // 定数
-  const csvURL = "https://nknhb966.github.io/artest3/models.csv";
+  const csvURL = "./models.csv";
   const easing = 0.1;
   const offy = isVisionPro() ? 0.6 : 0;
   const SPECIAL_KEYWORD_OFFSETS = {
@@ -109,7 +109,7 @@
   }
 
 
-  // ◎4. UI生成系
+  // ◎4. UI作成関数
   // ボタン風のテキスト画像を生成し、Three.jsの平面オブジェクトを返す関数
   const createLabelButton = (text, bgColor = "#44ccff", textColor = "#000000", width = 512, height = 128) => {
     const canvas = document.createElement("canvas");
@@ -184,7 +184,7 @@
 
   // 情報表示切替ボタンの見た目を更新する関数
   function updateToggleButtonAppearance(toggleBtn) {
-    const bgColor = showInfo ? "#000000" : "#cccccc";
+    const bgColor = showInfo ? "#333333" : "#cccccc";
     const textColor = showInfo ? "#ffffff" : "#000000";
 
     const newBtn = createLabelButton("情報表示切替", bgColor, textColor);
@@ -205,8 +205,8 @@
 
   // アニメーション切替ボタンの見た目を更新する関数
   function updateAnimationToggleButtonAppearance(toggleBtn) {
-    const bgColor = isAnimationEnabled ? "#ffcccc" : "#cccccc";
-    const textColor = isAnimationEnabled ? "#ff0000" : "#333333";
+    const bgColor = isAnimationEnabled ? "#ff6666" : "#ffe5e5";
+    const textColor = isAnimationEnabled ? "#ffffff" : "#cc0000";
 
     const newBtn = createLabelButton("アニメーション", bgColor, textColor);
     newBtn.position.copy(toggleBtn.position);
@@ -446,7 +446,7 @@
       await loadModel(records[0].path, records[0].name);
     }
 
-    const toggleBtn = createLabelButton("情報表示切替", "#000000", "#cccccc");
+    const toggleBtn = createLabelButton("情報表示切替", "#333333", "#ffffff");
     if (toggleBtn.material) {
       if (toggleBtn.material.map) toggleBtn.material.map.dispose();
       toggleBtn.material.dispose();
@@ -457,7 +457,7 @@
     toggleBtn.userData.toggleInfo = true;
     menu.add(toggleBtn);
 
-    const animToggleBtn = createLabelButton("アニメーション", "#ffcccc", "#ff0000");
+    const animToggleBtn = createLabelButton("アニメーション", "#ff6666", "#ffffff");
     if (animToggleBtn.material) {
       if (animToggleBtn.material.map) animToggleBtn.material.map.dispose();
       animToggleBtn.material.dispose();
