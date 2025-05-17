@@ -281,7 +281,7 @@
       const isSelected = oldBtn.userData.path === path;
       const color = isSelected ? "#0000ff" : "#44ccff";
       const textColor = isSelected ? "#ffffff" : "#000000";
-      const newBtn = createLabelButton(oldBtn.userData.name, color);
+      const newBtn = createLabelButton(oldBtn.userData.name, color, textColor);
       newBtn.position.copy(oldBtn.position);
       newBtn.userData = { ...oldBtn.userData };
 
