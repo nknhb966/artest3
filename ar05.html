@@ -10,7 +10,7 @@
   <header>
     <h1>craftARt Lite</h1>
     LIB: <a href="https://github.com/code4fukui/egxr.js/blob/main/egxr.js">egxr.js</a>, <a href="https://github.com/code4fukui/vr-lenspark/blob/main/threeutil.js">threeutil.js</a><br>
-    GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br>
+<!--     GLB: <a href="https://github.com/echizencity/opendata/tree/main/kokufuhakkutsu/">越前国府発掘プロジェクト</a><br> -->
 <!--     APP: <a href="https://github.com/echizencity/craftARt-kit/tree/main/">src on GitHub</a><br> -->
     <label for="modelSelect">モデルを選択：</label>
     <select id="modelSelect"></select>
@@ -35,7 +35,7 @@
   const csvURL = "./models.csv";
   const easing = 0.1;
   const offy = isVisionPro() ? 0.6 : 0;
-  const SPECIAL_KEYWORD_OFFSETS = {
+  const SPECIAL_KEYWORD_OFFSETS_Y = {
     "遺構": -1.5,
   };
 
@@ -241,9 +241,9 @@
     model.userData.path = path;
 
     let yOffset = offy - 0.2;
-    for (const keyword in SPECIAL_KEYWORD_OFFSETS) {
+    for (const keyword in SPECIAL_KEYWORD_OFFSETS_Y) {
       if (name.includes(keyword)) {
-        yOffset += SPECIAL_KEYWORD_OFFSETS[keyword];
+        yOffset += SPECIAL_KEYWORD_OFFSETS_Y[keyword];
         break;
       }
     }
